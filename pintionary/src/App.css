@@ -19,7 +19,45 @@
 }
 
 .App-intro {
+  position: fixed;
   font-size: large;
+  color: white;
+  top: 50%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -100px;
+  z-index: 2;
+}
+
+.App-intro-button {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: 10px;
+  z-index: 2;
+}
+
+.dimmed {
+  position: absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.dimmed:after {
+  content: " ";
+  z-index: 10;
+  display: block;
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 @keyframes App-logo-spin {
