@@ -177,7 +177,6 @@ class App extends Component {
                 Okay, let's start
                </button>
           </div>
-
           <div id = "side-panel">
             <button id="save" onClick={this.save} className="save-button">
                 save
@@ -190,11 +189,9 @@ class App extends Component {
           </div> 
           <div id = "tools">
           </div>  
-
       </div>   
     );
   }
-
   componentDidMount(){
     auth.onAuthStateChanged((user) => {
         if (user) {
@@ -203,9 +200,37 @@ class App extends Component {
         } 
       });
 
+
+//function checkFlag() {
+    if(window.google) {
+       
+       window.initMap = this.initMap; 
+       loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+    } else {
+      //window.setTimeout(checkFlag, 100); /* this checks the flag every 100 milliseconds*/  
+    }
+//}
+ //this.checkFlag();
+  if (window.google){
     window.initMap = this.initMap; 
     loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+  } else{
+//window.setTimeout(this, 100); /* this checks the flag every 100 milliseconds*/  
+    //this.checkFlag();
   }
+}
+
+checkFlag() {
+    if(window.google) {
+        window.initMap = this.initMap; 
+    loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+    } else {
+      window.setTimeout(this.checkFlag, 100);
+      this.checkFlag();
+    }
+}
+
+
 
       initMap = function() {
               var map = new google.maps.Map(document.getElementById('map'), {
