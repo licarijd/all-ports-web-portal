@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import firebase, { auth, provider } from './fire.js';
 import logo from './logo.svg';
 import './App.css';
+import FileUploader from 'react-firebase-file-uploader';
 
 const google = window.google;
 var mapName = "testMap";
@@ -23,6 +24,13 @@ class App extends Component {
 
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
+  }
+
+  handleUploadStart = () => this.setState({isUploading: true, progress: 0});
+  handleProgress = (progress) => this.setState({progress});
+  handleUploadError = (error) => {
+    this.setState({isUploading: false});
+    console.error(error);
   }
 
   pinMode = true;
@@ -113,6 +121,25 @@ class App extends Component {
   render() {
     return (
       <div id = "interctable">  
+        <form>
+              <label>Avatar:</label>
+              {this.state.isUploading &&
+              <p>Progress: {this.state.progress}</p>
+              }
+              {this.state.avatarURL &&
+              <img src={this.state.avatarURL} />
+              }
+              <FileUploader
+              accept="image/*"
+              name="avatar"
+              randomizeFilename
+              storageRef={firebase.storage().ref('images')}
+              onUploadStart={this.handleUploadStart}
+              onUploadError={this.handleUploadError}
+              onUploadSuccess={this.handleUploadSuccess}
+              onProgress={this.handleProgress}
+              />
+          </form>
           <div className="wrapper">
           
            {this.state.user ?
