@@ -1,16 +1,54 @@
 import React, { Component } from 'react';
+import firebase, { auth, provider } from './fire.js';
 import logo from './logo.svg';
 import './App.css';
 
 const google = window.google;
-
+var mapName = "testMap";
+var userID;
 
 var markers = [];
 var lines = [];
 
 class App extends Component {
 
+  constructor() {
+    super();
+    this.state = {
+      currentItem: '',
+      username: '',
+      items: [],
+      user: null // <-- add this line
+    }
+
+    this.login = this.login.bind(this); // <-- add this line
+    this.logout = this.logout.bind(this); // <-- add this line
+  }
+
   pinMode = true;
+
+  handleChange(e) {
+    /* ... */
+  }
+  logout() {
+    auth.signOut()
+    .then(() => {
+      this.setState({
+        user: null
+      });
+    });
+  }
+  login() {
+    auth.signInWithPopup(provider) 
+      .then((result) => {
+        const user = result.user;
+        console.log("user: " + user);
+        this.setState({
+          user
+        });
+      });
+
+  }
 
   //Dismiss overlay when user clicks "get started" button
   dismissIntro(){
@@ -38,31 +76,51 @@ class App extends Component {
     introElement.hidden = true;
   }
 
-  authenticate(){
-    var introElement = document.getElementById('intro');
-    introElement.hidden = true;
-  }
-
   save(){
      
         document.getElementById("savedata").value = "";
 
         for (var i = 0; i < markers.length; i++) {
             var marker = markers[i].position;
-            document.getElementById("savedata").value += marker;
+            document.getElementById("savedata").value += marker;           
         }
 
        for (var i = 0; i < lines.length; i++) {
             var line = lines[i].getPath().getArray();
             document.getElementById("savedata").value += line;
         }
+
+        var mapData = document.getElementById("savedata").value;
+
+        
+        firebase.database().ref('users/' + userID + '/maps/' + mapName).push(mapData);
+  }
+
+  load(){
+
+        /* Create reference to messages in Firebase Database */
+        let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
+        messagesRef.on('child_added', snapshot => {
+
+        /* Update React state when message is added at Firebase Database */
+        let mapPlotData = { text: snapshot.val(), id: snapshot.key };
+        //this.setState({ messages: [message].concat(this.state.messages) });
+        console.log("mapPlotData : " + mapPlotData.text);
+    })
   }
 
   //Render introduction overlay when web app starts
   render() {
     return (
       <div id = "interctable">  
-            
+          <div className="wrapper">
+          
+           {this.state.user ?
+              <button onClick={this.logout}>Log Out</button>                
+              :
+              <button onClick={this.login}>Log In</button>              
+            }
+  </div>   
          <div id = "intro">
             <img src={logo} className="App-logo" alt="logo" />
             <div  className="dimmed"></div>
@@ -77,23 +135,11 @@ class App extends Component {
                 save
             </button>
             <textarea id="savedata" rows="8" cols="40"></textarea>
-             <button  onClick={this.dismissIntro} className="load-button">
+             <button  onClick={this.load} className="load-button">
                 load
-            </button>
-             <button id="clear" onClick={this.save} className="save-button">
-                clear
-            </button>
-            <button  onClick={this.dismissIntro} className="sign-in-button">
-                sign-n
             </button>
           </div> 
           <div id = "tools">
-            <button  onClick={this.dismissIntro} className="add-pin">
-                add pin
-            </button>
-             <button  onClick={this.dismissIntro} className="add-route">
-                add route
-            </button>
           </div>  
 
       </div>   
@@ -101,6 +147,12 @@ class App extends Component {
   }
 
   componentDidMount(){
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+          this.setState({ user });
+          userID = user.uid;
+        } 
+      });
 
     window.initMap = this.initMap; 
     loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
