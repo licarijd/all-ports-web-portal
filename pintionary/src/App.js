@@ -4,6 +4,10 @@ import './App.css';
 
 const google = window.google;
 
+
+var markers = [];
+var lines = [];
+
 class App extends Component {
 
   pinMode = true;
@@ -39,6 +43,20 @@ class App extends Component {
     introElement.hidden = true;
   }
 
+  save(){
+     
+        document.getElementById("savedata").value = "";
+
+        for (var i = 0; i < markers.length; i++) {
+            var marker = markers[i].position;
+            document.getElementById("savedata").value += marker;
+        }
+
+       for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].getPath().getArray();
+            document.getElementById("savedata").value += line;
+        }
+  }
 
   //Render introduction overlay when web app starts
   render() {
@@ -48,17 +66,25 @@ class App extends Component {
          <div id = "intro">
             <img src={logo} className="App-logo" alt="logo" />
             <div  className="dimmed"></div>
-            <body>
                <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
                <button  onClick={this.dismissIntro} className="App-intro-button">
                 Okay, let's start
                </button>
-            </body>       
           </div>
 
           <div id = "side-panel">
-            <button  onClick={this.dismissIntro} className="save-button">
+            <button id="save" onClick={this.save} className="save-button">
                 save
+            </button>
+            <textarea id="savedata" rows="8" cols="40"></textarea>
+             <button  onClick={this.dismissIntro} className="load-button">
+                load
+            </button>
+             <button id="clear" onClick={this.save} className="save-button">
+                clear
+            </button>
+            <button  onClick={this.dismissIntro} className="sign-in-button">
+                sign-n
             </button>
           </div> 
           <div id = "tools">
@@ -74,15 +100,10 @@ class App extends Component {
     );
   }
 
-
   componentDidMount(){
-     
-    
 
-    window.initMap = this.initMap;  
-    
+    window.initMap = this.initMap; 
     loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
-
   }
 
       initMap = function() {
@@ -111,6 +132,15 @@ class App extends Component {
         });
 
         drawingManager.setMap(map);
+
+        google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
+           markers.push(marker);
+        });
+
+         google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
+           lines.push(line);
+        });
+  
     }
 }
 
