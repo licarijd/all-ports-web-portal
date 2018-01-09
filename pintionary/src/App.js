@@ -4,6 +4,7 @@ import logo from './logo.svg';
 import './App.css';
 import FileUploader from 'react-firebase-file-uploader';
 
+const storage = firebase.storage().ref()
 const google = window.google;
 var mapName = "testMap";
 var userID;
@@ -19,11 +20,25 @@ class App extends Component {
       currentItem: '',
       username: '',
       items: [],
-      user: null // <-- add this line
+      user: null, // <-- add this line
+
+      test: ''
     }
+    
+    this.getImage('images/test');
 
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
+  }
+
+    getImage (image) {
+    let { state } = this
+    storage.child(`${image}.png`).getDownloadURL().then((url) => {
+      state[image] = url
+      this.setState({test: state[image]})
+    }).catch((error) => {
+      // Handle any errors
+    })
   }
 
   handleUploadStart = () => this.setState({isUploading: true, progress: 0});
@@ -106,6 +121,7 @@ class App extends Component {
 
   load(){
 
+        
         /* Create reference to messages in Firebase Database */
         let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
         messagesRef.on('child_added', snapshot => {
@@ -120,9 +136,13 @@ class App extends Component {
   //Render introduction overlay when web app starts
   render() {
     return (
-      <div id = "interctable">  
+      <div id = "interctable"> 
+         <div>
+        Hello Lithuania<br />
+        <img src={ this.state.test } alt="test image" />
+        </div> 
         <form>
-              <label>Avatar:</label>
+              <label>photos:</label>
               {this.state.isUploading &&
               <p>Progress: {this.state.progress}</p>
               }
@@ -132,7 +152,8 @@ class App extends Component {
               <FileUploader
               accept="image/*"
               name="avatar"
-              randomizeFilename
+              //randomizeFilename
+              filename="test"
               storageRef={firebase.storage().ref('images')}
               onUploadStart={this.handleUploadStart}
               onUploadError={this.handleUploadError}
@@ -161,6 +182,7 @@ class App extends Component {
             <button id="save" onClick={this.save} className="save-button">
                 save
             </button>
+          
             <textarea id="savedata" rows="8" cols="40"></textarea>
              <button  onClick={this.load} className="load-button">
                 load
