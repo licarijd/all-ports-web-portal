@@ -3,7 +3,7 @@
 }
 
 .App-logo {
-  animation: App-logo-spin infinite 20s linear;
+  /*animation: App-logo-spin infinite 20s linear;*/
   height: 80px;
 }
 
@@ -44,6 +44,36 @@
   right:0;
   top:0;
   bottom:0;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.side-panel {
+  position: fixed;
+  left:0;
+  right:70%;
+  top:10%;
+  bottom:0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.textbox {
+  position: absolute;
+  left:0;
+  right:100;
+  top:0;
+  bottom:0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.top-panel {
+  position: fixed;
+  left:30%;
+  right:20%;
+  top:0;
+  bottom:1000;
   z-index: 1;
   background: rgba(0, 0, 0, 0.5);
 }
@@ -66,6 +96,7 @@
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
+        position: fixed;
         height: 100%;
       }
       /* Optional: Makes the sample page fill the window. */

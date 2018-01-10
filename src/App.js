@@ -137,55 +137,59 @@ class App extends Component {
   render() {
     return (
       <div id = "interctable"> 
-         <div>
-        Hello Lithuania<br />
-        <img src={ this.state.test } alt="test image" />
-        </div> 
-        <form>
-              <label>photos:</label>
-              {this.state.isUploading &&
-              <p>Progress: {this.state.progress}</p>
-              }
-              {this.state.avatarURL &&
-              <img src={this.state.avatarURL} />
-              }
-              <FileUploader
-              accept="image/*"
-              name="avatar"
-              //randomizeFilename
-              filename="test"
-              storageRef={firebase.storage().ref('images')}
-              onUploadStart={this.handleUploadStart}
-              onUploadError={this.handleUploadError}
-              onUploadSuccess={this.handleUploadSuccess}
-              onProgress={this.handleProgress}
-              />
-          </form>
-          <div className="wrapper">
-          
-           {this.state.user ?
-              <button onClick={this.logout}>Log Out</button>                
-              :
-              <button onClick={this.login}>Log In</button>              
-            }
-  </div>   
+         
          <div id = "intro">
-            <img src={logo} className="App-logo" alt="logo" />
             <div  className="dimmed"></div>
                <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
                <button  onClick={this.dismissIntro} className="App-intro-button">
                 Okay, let's start
                </button>
           </div>
-          <div id = "side-panel">
-            <button id="save" onClick={this.save} className="save-button">
-                save
-            </button>
-          
+          <div id = "top-panel"  className = "top-panel">
+                <img src={logo} className="App-logo" alt="logo" />
+                <div className="wrapper">          
+                {this.state.user ?
+                    <button onClick={this.logout}>Log Out</button>                
+                    :
+                    <button onClick={this.login}>Log In</button>                                  
+                  }
+                </div>   
+                <button id="save" onClick={this.save} className="save-button">
+                    save
+                </button>
+          </div> 
+          <div id = "side-panel" className = "side-panel">
+          <button  onClick={this.load} className="load-button">
+                 load saved map
+          </button>
+          <br/><br/>
+            <textarea id="name-map" rows="8" cols="40">Type your map name here</textarea>
+            <br/><br/>Co-ordinates (for testing)
             <textarea id="savedata" rows="8" cols="40"></textarea>
-             <button  onClick={this.load} className="load-button">
-                load
-            </button>
+            <div>
+                <br/><br/>Photos <br/>
+                <img src={ this.state.test } alt="test image" />
+                </div> 
+                <form>
+                      <label>photos:</label>
+                      {this.state.isUploading &&
+                      <p>Progress: {this.state.progress}</p>
+                      }
+                      {this.state.avatarURL &&
+                      <img src={this.state.avatarURL} />
+                      }
+                      <FileUploader
+                      accept="image/*"
+                      name="avatar"
+                      //randomizeFilename
+                      filename="test"
+                      storageRef={firebase.storage().ref('images')}
+                      onUploadStart={this.handleUploadStart}
+                      onUploadError={this.handleUploadError}
+                      onUploadSuccess={this.handleUploadSuccess}
+                      onProgress={this.handleProgress}
+                      />
+                </form>
           </div> 
           <div id = "tools">
           </div>  
