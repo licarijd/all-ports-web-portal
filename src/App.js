@@ -12,6 +12,8 @@ var userID;
 var markers = [];
 var lines = [];
 
+var currentMapPictures = 0;
+
 class App extends Component {
 
   constructor() {
@@ -21,7 +23,7 @@ class App extends Component {
       username: '',
       items: [],
       user: null, // <-- add this line
-
+      value: 'Please enter your map name',
       test: ''
     }
 
@@ -29,7 +31,21 @@ class App extends Component {
 
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
+
+    this.handleChange = this.handleChange.bind(this);
+    //this.handleSubmit = this.handleSubmit.bind(this);
   }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+    mapName = event.target.value;
+    console.log(event.target.value);
+  }
+
+  /*handleSubmit(event) {
+    alert('A map name was submitted: ' + this.state.value);
+    event.preventDefault();
+  }*/
 
   getImage = function (image) {
       let { state } = this
@@ -48,11 +64,16 @@ class App extends Component {
     console.error(error);
   }
 
+  handleUploadSuccess(){currentMapPictures++; console.log(currentMapPictures)};/* = (filename) => {
+    this.setState({avatar: filename, progress: 100, isUploading: false});
+    firebase.storage().ref('images').child(filename).getDownloadURL().then(url => this.setState({avatarURL: url}));
+  };*/
+
   pinMode = true;
 
-  handleChange(e) {
+ /* handleChange(e) {
     /* ... */
-  }
+//}
   logout() {
     auth.signOut()
     .then(() => {
@@ -101,22 +122,31 @@ class App extends Component {
 
   save(){
      
+        var lineData;
+        var pinData;
+
         document.getElementById("savedata").value = "";
 
         for (var i = 0; i < markers.length; i++) {
             var marker = markers[i].position;
-            document.getElementById("savedata").value += marker;           
+            pinData += marker + "+";           
         }
 
        for (var i = 0; i < lines.length; i++) {
             var line = lines[i].getPath().getArray();
-            document.getElementById("savedata").value += line;
+            lineData += line + "+";
         }
 
-        var mapData = document.getElementById("savedata").value;
+        //var mapData = document.getElementById("savedata").value;
+
+        //currentMap[0] = markers;
+        //currentMap[1] = lines;
+        //currentMap[2] = currentMapPictures;
 
         
-        firebase.database().ref('users/' + userID + '/maps/' + mapName).push(mapData);
+        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(/*mapData*/pinData);
+        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(/*mapData*/lineData);
+        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(/*mapData*/currentMapPictures);
   }
 
   load(){
@@ -166,7 +196,11 @@ class App extends Component {
                  load test map
           </button>
           <br/><br/>
-            <textarea id="name-map" rows="8" cols="40">Type your map name here</textarea>
+          <input
+              type="text"
+              value={this.state.value}
+              onChange={this.handleChange}
+          />
             <br/><br/>Co-ordinates (for testing)
             <textarea id="savedata" rows="8" cols="40"></textarea>
             <div>
@@ -185,7 +219,7 @@ class App extends Component {
                       accept="image/*"
                       name="avatar"
                       //randomizeFilename
-                      filename="test"
+                      filename={mapName+currentMapPictures}
                       storageRef={firebase.storage().ref('images')}
                       onUploadStart={this.handleUploadStart}
                       onUploadError={this.handleUploadError}
