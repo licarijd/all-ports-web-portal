@@ -24,21 +24,21 @@ class App extends Component {
 
       test: ''
     }
-    
-    this.getImage('images/test');
+
+    //this.getImage('images/test');
 
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
   }
 
-    getImage (image) {
-    let { state } = this
-    storage.child(`${image}.png`).getDownloadURL().then((url) => {
-      state[image] = url
-      this.setState({test: state[image]})
-    }).catch((error) => {
-      // Handle any errors
-    })
+  getImage = function (image) {
+      let { state } = this
+      storage.child(`${image}.png`).getDownloadURL().then((url) => {
+        state[image] = url
+        this.setState({test: state[image]})
+      }).catch((error) => {
+        // Handle any errors
+      })
   }
 
   handleUploadStart = () => this.setState({isUploading: true, progress: 0});
@@ -120,8 +120,7 @@ class App extends Component {
   }
 
   load(){
-
-        
+        this.getImage('/images/test');
         /* Create reference to messages in Firebase Database */
         let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
         messagesRef.on('child_added', snapshot => {
@@ -151,16 +150,20 @@ class App extends Component {
                 {this.state.user ?
                     <button onClick={this.logout}>Log Out</button>                
                     :
-                    <button onClick={this.login}>Log In</button>                                  
+                    <button onClick={this.login}>Ignore this button for now</button>                                  
                   }
-                </div>   
-                <button id="save" onClick={this.save} className="save-button">
-                    save
-                </button>
+                </div>  
+                <div className="wrapper">          
+                {this.state.user ?
+                    <button onClick={this.save/*this.logout*/}>Save current map</button>                
+                    :
+                    <button onClick={this.login}>Sign in to save current map</button>                                  
+                  }
+                </div> 
           </div> 
           <div id = "side-panel" className = "side-panel">
-          <button  onClick={this.load} className="load-button">
-                 load saved map
+          <button  onClick={this.load.bind(this)} className="load-button">
+                 load test map
           </button>
           <br/><br/>
             <textarea id="name-map" rows="8" cols="40">Type your map name here</textarea>
