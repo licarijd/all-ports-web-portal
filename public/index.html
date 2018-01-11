@@ -112,7 +112,44 @@
     </noscript>
     <div id="root"></div>
      <input id="pac-input" class="controls" type="text" placeholder="Search">
-    <div id="map"></div>
+    <div id="map">
+<script>
+window.markers = "heyeyeye";
+                    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: -34.397, lng: 150.644},
+          zoom: 8
+        });
+
+        var drawingManager = new google.maps.drawing.DrawingManager({
+          drawingMode: google.maps.drawing.OverlayType.MARKER,
+          drawingControl: true,
+          drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_RIGHT,
+            drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
+          },
+          markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
+          circleOptions: {
+            fillColor: '#ffff00',
+            fillOpacity: 1,
+            strokeWeight: 5,
+            clickable: false,
+            editable: true,
+            zIndex: 1
+          }
+        });
+        drawingManager.setMap(map);
+
+        google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
+           markers.push(marker);
+        });
+
+         google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
+           lines.push(line);
+        });
+      }
+        </script>
+    </div>
     
   </body>
   </script>

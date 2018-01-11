@@ -136,7 +136,7 @@ class App extends Component {
   }
 
   save(){
-     
+     console.log("WINDOW: + window " + window.markers);
         var lineData;
         var pinData;
 
@@ -306,8 +306,8 @@ mapsChecked = true;
 //}
  //this.checkFlag();
   if (window.google){
-    window.initMap = this.initMap; 
-    loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+    //window.initMap = this.initMap; 
+    //loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
   } else{
 //window.setTimeout(this, 100); /* this checks the flag every 100 milliseconds*/  
     //this.checkFlag();
@@ -317,7 +317,7 @@ mapsChecked = true;
 checkFlag() {
     if(window.google) {
         window.initMap = this.initMap; 
-    loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+    //loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
     } else {
       window.setTimeout(this.checkFlag, 100);
       this.checkFlag();
@@ -327,7 +327,7 @@ checkFlag() {
 
 
       initMap = function() {
-              var map = new google.maps.Map(document.getElementById('map'), {
+             /* var map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: -34.397, lng: 150.644},
                 zoom: 8
               });
@@ -351,15 +351,15 @@ checkFlag() {
           }
         });
 
-        drawingManager.setMap(map);
+        drawingManager.setMap(map);*/
 
-        google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
+        /*google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
            markers.push(marker);
         });
 
-         google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
+         google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
            lines.push(line);
-        });
+        });*/
   
     }
 }
