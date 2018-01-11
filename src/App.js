@@ -10,6 +10,10 @@ const google = window.google;
 var mapName = "testMap";
 var userID;
 
+var allMaps = [];
+var mapsChecked = false;
+var listItems;
+
 var markers = [];
 var lines = [];
 var r = '';
@@ -26,7 +30,8 @@ class App extends Component {
       items: [],
       user: null, // <-- add this line
       value: 'Please enter your map name',
-      test: ''
+      test: '',
+      itemArray: []
     }
 
     //this.getImage('images/test');
@@ -37,6 +42,14 @@ class App extends Component {
     this.handleChange = this.handleChange.bind(this);
     //this.handleSubmit = this.handleSubmit.bind(this);
   }
+
+  createMapList() {
+  const item = this.state.itemArray;
+  const title = 'mmmmmmmmmm';
+  const text = 'dfdfdf';
+  item.push({ title, text })
+  this.setState({itemArray: item})
+}
 
   handleChange(event) {
     this.setState({value: event.target.value});
@@ -167,8 +180,23 @@ class App extends Component {
 var ref = db.ref('users/' + userID + '/maps/');
 ref.orderByChild("markers").on("child_added", function(snapshot) {
   console.log(snapshot.key + " was " + snapshot.val().markers + " meters tall");
+  allMaps.push(snapshot.val().markers);
 });
+
+
+if (!mapsChecked){
+
+this.createMapList();
+
+}
+mapsChecked = true;
+
     })
+
+                     //const map = [1, 2, 3, 4, 5];
+/*listItems = allMaps.map((item) =>
+  <button key={item.toString()}>{item}</button>
+);*/
   }
 
   //Render introduction overlay when web app starts
@@ -204,6 +232,22 @@ ref.orderByChild("markers").on("child_added", function(snapshot) {
           <button  onClick={this.load.bind(this)} className="load-button">
                  load test map
           </button>
+          <div>
+                {this.state.user && !mapsChecked ? this.load() : false
+                } 
+                 
+          </div>
+        <div>
+        {this.state.itemArray.map((item, index) => {
+          return (
+            <div className="box" key={index}>
+                <div>
+                 <button>{item.title}</button>
+               </div>
+            </div>
+          )
+        })}
+      </div>
           <br/><br/>
           <input
               type="text"
