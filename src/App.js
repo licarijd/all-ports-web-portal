@@ -3,6 +3,7 @@ import firebase, { auth, provider } from './fire.js';
 import logo from './logo.svg';
 import './App.css';
 import FileUploader from 'react-firebase-file-uploader';
+//import firebaseAdmin from 'firebase-admin';
 
 const storage = firebase.storage().ref()
 const google = window.google;
@@ -11,8 +12,9 @@ var userID;
 
 var markers = [];
 var lines = [];
-
+var r = '';
 var currentMapPictures = 0;
+
 
 class App extends Component {
 
@@ -159,6 +161,13 @@ class App extends Component {
         let mapPlotData = { text: snapshot.val(), id: snapshot.key };
         //this.setState({ messages: [message].concat(this.state.messages) });
         console.log("mapPlotData : " + mapPlotData.text);
+
+
+        var db = firebase.database();
+var ref = db.ref('users/' + userID + '/maps/');
+ref.orderByChild("markers").on("child_added", function(snapshot) {
+  console.log(snapshot.key + " was " + snapshot.val().markers + " meters tall");
+});
     })
   }
 
