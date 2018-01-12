@@ -3,102 +3,97 @@ import firebase, { auth, provider } from './fire.js';
 import logo from './logo.svg';
 import './App.css';
 import FileUploader from 'react-firebase-file-uploader';
-//import firebaseAdmin from 'firebase-admin';
 
 const storage = firebase.storage().ref()
+
+//Need a reference to google object from index.html
 const google = window.google;
-var mapName = "testMap";
+
+var mapName = "";
 var userID;
 
+//References the list of all of the user's maps
 var allMaps = [];
-var mapsChecked = false;
 var listItems;
 
+//Represents if the map list has been checked at the start of the program
+var mapsChecked = false;
+
+//Lists of routes and pins
 var markers = [];
 var lines = [];
-var r = '';
-var currentMapPictures = 0;
 
+//The number of pictures associated with the currently loaded map
+var currentMapPictures = 0;
 
 class App extends Component {
 
   constructor() {
     super();
     this.state = {
-      currentItem: '',
-      username: '',
-      items: [],
-      user: null, // <-- add this line
-      value: 'Please enter your map name',
-      test: '',
+      user: null, 
+
+      //Map name input field
+      mapNameField: 'Please enter your map name',
+      loadedImage: '',
       itemArray: []
     }
 
-    //this.getImage('images/test');
-
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
-
     this.handleChange = this.handleChange.bind(this);
-    //this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  //Adds maps to a list
   createMapList() {
-  const item = this.state.itemArray;
-  const title = 'mmmmmmmmmm';
-  const text = 'dfdfdf';
-  item.push({ title, text })
-  this.setState({itemArray: item})
-}
+    const item = this.state.itemArray;
+    const title = 'test map';
+    const text = 'test map description';
+    item.push({ title, text })
+    this.setState({ itemArray: item })
+  }
 
+  //Update map nme field with user input
   handleChange(event) {
-    this.setState({value: event.target.value});
+    this.setState({ mapNameField: event.target.value });
     mapName = event.target.value;
     console.log(event.target.value);
   }
 
-  /*handleSubmit(event) {
-    alert('A map name was submitted: ' + this.state.value);
-    event.preventDefault();
-  }*/
-
+  //Gets an image via firebase URL and loads it into an element
   getImage = function (image) {
-      let { state } = this
-      storage.child(`${image}.png`).getDownloadURL().then((url) => {
-        state[image] = url
-        this.setState({test: state[image]})
-      }).catch((error) => {
-        // Handle any errors
-      })
+    let { state } = this
+    storage.child(`${image}.png`).getDownloadURL().then((url) => {
+      state[image] = url
+      this.setState({ loadedImage: state[image] })
+    }).catch((error) => {
+      // Handle any errors
+    })
   }
 
-  handleUploadStart = () => this.setState({isUploading: true, progress: 0});
-  handleProgress = (progress) => this.setState({progress});
+  //Update upload info
+  handleUploadStart = () => this.setState({ isUploading: true, progress: 0 });
+  handleProgress = (progress) => this.setState({ progress });
   handleUploadError = (error) => {
-    this.setState({isUploading: false});
+    this.setState({ isUploading: false });
     console.error(error);
   }
 
-  handleUploadSuccess(){currentMapPictures++; console.log(currentMapPictures)};/* = (filename) => {
-    this.setState({avatar: filename, progress: 100, isUploading: false});
-    firebase.storage().ref('images').child(filename).getDownloadURL().then(url => this.setState({avatarURL: url}));
-  };*/
+  //Increment the image counter when an image is added to a map
+  handleUploadSuccess() { currentMapPictures++; console.log(currentMapPictures) };
 
-  pinMode = true;
-
- /* handleChange(e) {
-    /* ... */
-//}
+  //Auth functions
   logout() {
     auth.signOut()
-    .then(() => {
-      this.setState({
-        user: null
+      .then(() => {
+        this.setState({
+          user: null
+        });
       });
-    });
   }
+
   login() {
-    auth.signInWithPopup(provider) 
+    auth.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
         console.log("user: " + user);
@@ -106,270 +101,242 @@ class App extends Component {
           user
         });
       });
-
   }
 
-  //Dismiss overlay when user clicks "get started" button
-  dismissIntro(){
+  //Incomplete
+  dismissIntro() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
 
-  addRoute(){
+  addRoute() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
 
-  addPin(){
+  addPin() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
 
-  savePin(){
+  savePin() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
 
-  saveRoute(){
+  saveRoute() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
 
-  save(){
-     console.log("WINDOW: + window " + window.markers);
-        var lineData;
-        var pinData;
 
-        document.getElementById("savedata").value = "";
+  save() {
 
-        for (var i = 0; i < markers.length; i++) {
-            var marker = markers[i].position;
-            pinData += marker + "+";           
-        }
+    //Test mutability
+    window.markers += " marker";
+    console.log("markers " + window.markers);
+    var lineData;
+    var pinData;
 
-       for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].getPath().getArray();
-            lineData += line + "+";
-        }
+    //document.getElementById("savedata").value = "";
 
-        //var mapData = document.getElementById("savedata").value;
+    //Add pins and routes to lists
+    for (var i = 0; i < markers.length; i++) {
+      var marker = markers[i].position;
+      pinData += marker + "+";
+    }
 
-        //currentMap[0] = markers;
-        //currentMap[1] = lines;
-        //currentMap[2] = currentMapPictures;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].getPath().getArray();
+      lineData += line + "+";
+    }
 
-        
-        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(/*mapData*/pinData);
-        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(/*mapData*/lineData);
-        firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(/*mapData*/currentMapPictures);
+    //Push all map data to Firebase
+    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
+    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
+    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(currentMapPictures);
   }
 
-  load(){
-        this.getImage('/images/test');
-        /* Create reference to messages in Firebase Database */
-        let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
-        messagesRef.on('child_added', snapshot => {
+  load() {
 
-        /* Update React state when message is added at Firebase Database */
-        let mapPlotData = { text: snapshot.val(), id: snapshot.key };
-        //this.setState({ messages: [message].concat(this.state.messages) });
-        console.log("mapPlotData : " + mapPlotData.text);
+    //Test loading an image from Firebase
+    this.getImage('/images/test');
 
+    /* Create reference to maps in Firebase Database */
+    let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
+    messagesRef.on('child_added', snapshot => {
 
-        var db = firebase.database();
-var ref = db.ref('users/' + userID + '/maps/');
-ref.orderByChild("markers").on("child_added", function(snapshot) {
-  console.log(snapshot.key + " was " + snapshot.val().markers + " meters tall");
-  allMaps.push(snapshot.val().markers);
-});
+      /* Load map plot data from Firebase */
+      let mapPlotData = { text: snapshot.val(), id: snapshot.key };
+      console.log("mapPlotData : " + mapPlotData.text);
 
+      //Get the names of all of a user's maps, and add to a list. This will be used to generate links in the 'maps' section
+      var db = firebase.database();
+      var ref = db.ref('users/' + userID + '/maps/');
+      ref.orderByChild("markers").on("child_added", function (snapshot) {
+        console.log(snapshot.key + " markers " + snapshot.val().markers);
+        allMaps.push(snapshot.val().markers);
+      });
 
-if (!mapsChecked){
-
-this.createMapList();
-
-}
-mapsChecked = true;
-
+      //Only generate the list of maps once
+      if (!mapsChecked) {
+        this.createMapList();
+      }
+      mapsChecked = true;
     })
-
-                     //const map = [1, 2, 3, 4, 5];
-/*listItems = allMaps.map((item) =>
-  <button key={item.toString()}>{item}</button>
-);*/
   }
 
   //Render introduction overlay when web app starts
   render() {
     return (
-      <div id = "interctable"> 
-         
-         <div id = "intro">
-            <div  className="dimmed"></div>
-               <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
-               <button  onClick={this.dismissIntro} className="App-intro-button">
-                Okay, let's start
+      <div id="interctable">
+        <div id="intro">
+          <div className="dimmed"></div>
+          <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
+          <button onClick={this.dismissIntro} className="App-intro-button">
+            Okay, let's start
                </button>
+        </div>
+        <div id="top-panel" className="top-panel">
+          <img src={logo} className="App-logo" alt="logo" />
+          <div className="wrapper">
+            {this.state.user ?
+              <button onClick={this.logout}>Log Out</button>
+              :
+              <button onClick={this.login}>Ignore this button for now</button>
+            }
           </div>
-          <div id = "top-panel"  className = "top-panel">
-                <img src={logo} className="App-logo" alt="logo" />
-                <div className="wrapper">          
-                {this.state.user ?
-                    <button onClick={this.logout}>Log Out</button>                
-                    :
-                    <button onClick={this.login}>Ignore this button for now</button>                                  
-                  }
-                </div>  
-                <div className="wrapper">          
-                {this.state.user ?
-                    <button onClick={this.save/*this.logout*/}>Save current map</button>                
-                    :
-                    <button onClick={this.login}>Sign in to save current map</button>                                  
-                  }
-                </div> 
-          </div> 
-          <div id = "side-panel" className = "side-panel">
-          <button  onClick={this.load.bind(this)} className="load-button">
-                 load test map
+          <div className="wrapper">
+            {this.state.user ?
+              <button onClick={this.save}>Save current map</button>
+              :
+              <button onClick={this.login}>Sign in to save current map</button>
+            }
+          </div>
+        </div>
+        <div id="side-panel" className="side-panel">
+          <button onClick={this.load.bind(this)} className="load-button">
+            load test map
           </button>
           <div>
-                {this.state.user && !mapsChecked ? this.load() : false
-                } 
-                 
+            {this.state.user && !mapsChecked ? this.load() : false
+            }
           </div>
-        <div>
-        {this.state.itemArray.map((item, index) => {
-          return (
-            <div className="box" key={index}>
-                <div>
-                 <button>{item.title}</button>
-               </div>
-            </div>
-          )
-        })}
-      </div>
-          <br/><br/>
+          <div>
+            {this.state.itemArray.map((item, index) => {
+              return (
+                <div className="box" key={index}>
+                  <div>
+                    <button>{item.title}</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <br /><br />
           <input
-              type="text"
-              value={this.state.value}
-              onChange={this.handleChange}
+            type="text"
+            value={this.state.mapNameField}
+            onChange={this.handleChange}
           />
-            <br/><br/>Co-ordinates (for testing)
-            <textarea id="savedata" rows="8" cols="40"></textarea>
-            <div>
-                <br/><br/>Photos <br/>
-                <img src={ this.state.test } alt="test image" />
-                </div> 
-                <form>
-                      <label>photos:</label>
-                      {this.state.isUploading &&
-                      <p>Progress: {this.state.progress}</p>
-                      }
-                      {this.state.avatarURL &&
-                      <img src={this.state.avatarURL} />
-                      }
-                      <FileUploader
-                      accept="image/*"
-                      name="avatar"
-                      //randomizeFilename
-                      filename={mapName+currentMapPictures}
-                      storageRef={firebase.storage().ref('images')}
-                      onUploadStart={this.handleUploadStart}
-                      onUploadError={this.handleUploadError}
-                      onUploadSuccess={this.handleUploadSuccess}
-                      onProgress={this.handleProgress}
-                      />
-                </form>
-          </div> 
-          <div id = "tools">
-          </div>  
-      </div>   
+          <br /><br />
+          <div>
+            <br /><br />Photos <br />
+            <img src={this.state.loadedImage} alt="test image" />
+          </div>
+          <form>
+            <label>photos:</label>
+            {this.state.isUploading &&
+              <p>Progress: {this.state.progress}</p>
+            }
+            {this.state.avatarURL &&
+              <img src={this.state.avatarURL} />
+            }
+            <FileUploader
+              accept="image/*"
+              name="avatar"
+              filename={mapName + currentMapPictures}
+              storageRef={firebase.storage().ref('images')}
+              onUploadStart={this.handleUploadStart}
+              onUploadError={this.handleUploadError}
+              onUploadSuccess={this.handleUploadSuccess}
+              onProgress={this.handleProgress}
+            />
+          </form>
+        </div>
+        <div id="tools">
+        </div>
+      </div>
     );
   }
-  componentDidMount(){
+
+  //Check auth info
+  componentDidMount() {
     auth.onAuthStateChanged((user) => {
-        if (user) {
-          this.setState({ user });
-          userID = user.uid;
-        } 
-      });
-
-
-//function checkFlag() {
-    if(window.google) {
-       
-       window.initMap = this.initMap; 
-       loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
-    } else {
-      //window.setTimeout(checkFlag, 100); /* this checks the flag every 100 milliseconds*/  
-    }
-//}
- //this.checkFlag();
-  if (window.google){
-    //window.initMap = this.initMap; 
-    //loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
-  } else{
-//window.setTimeout(this, 100); /* this checks the flag every 100 milliseconds*/  
-    //this.checkFlag();
+      if (user) {
+        this.setState({ user });
+        userID = user.uid;
+      }
+    });
   }
-}
 
-checkFlag() {
-    if(window.google) {
-        window.initMap = this.initMap; 
-    //loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+
+  /*checkFlag() {
+    if (window.google) {
+      window.initMap = this.initMap;
+      //loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
     } else {
       window.setTimeout(this.checkFlag, 100);
       this.checkFlag();
     }
+  }*/
+
+
+
+ /* initMap = function () {
+     var map = new google.maps.Map(document.getElementById('map'), {
+       center: {lat: -34.397, lng: 150.644},
+       zoom: 8
+     });
+ 
+    var drawingManager = new google.maps.drawing.DrawingManager({
+       drawingMode: google.maps.drawing.OverlayType.MARKER,
+       drawingControl: true,
+       drawingControlOptions: {
+       position: google.maps.ControlPosition.TOP_RIGHT,
+       drawingModes: ['marker', 'polyline']
+   },
+
+     markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
+     circleOptions: {
+     fillColor: '#ffff00',
+     fillOpacity: 1,
+     strokeWeight: 5,
+     clickable: false,
+     editable: true,
+     zIndex: 1
+ }
+});
+
+drawingManager.setMap(map);
+
+    google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
+       markers.push(marker);
+    });
+
+     google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
+       lines.push(line);
+    });
+
+  }*/
 }
 
-
-
-      initMap = function() {
-             /* var map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: -34.397, lng: 150.644},
-                zoom: 8
-              });
-        
-             var drawingManager = new google.maps.drawing.DrawingManager({
-                drawingMode: google.maps.drawing.OverlayType.MARKER,
-                drawingControl: true,
-                drawingControlOptions: {
-                position: google.maps.ControlPosition.TOP_RIGHT,
-                drawingModes: ['marker', 'polyline']
-            },
-
-              markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
-              circleOptions: {
-              fillColor: '#ffff00',
-              fillOpacity: 1,
-              strokeWeight: 5,
-              clickable: false,
-              editable: true,
-              zIndex: 1
-          }
-        });
-
-        drawingManager.setMap(map);*/
-
-        /*google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
-           markers.push(marker);
-        });
-
-         google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
-           lines.push(line);
-        });*/
-  
-    }
-}
-
-function loadJS(src) {
-    var ref = window.document.getElementsByTagName("script")[0];
-    var script = window.document.createElement("script");
-    script.src = src;
-    script.async = true;
-    ref.parentNode.insertBefore(script, ref);
-}
+/*function loadJS(src) {
+  var ref = window.document.getElementsByTagName("script")[0];
+  var script = window.document.createElement("script");
+  script.src = src;
+  script.async = true;
+  ref.parentNode.insertBefore(script, ref);
+}*/
 
 export default App;

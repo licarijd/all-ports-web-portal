@@ -1,99 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8">
-    <title>Places Searchbox</title>
-    <style>
-      /* Always set the map height explicitly to define the size of the div
+
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <title>Places Searchbox</title>
+  <style>
+    /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
-      #map {
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #description {
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-      }
-
-      #infowindow-content .title {
-        font-weight: bold;
-      }
-
-      #infowindow-content {
-        display: none;
-      }
-
-      #map #infowindow-content {
-        display: inline;
-      }
-
-      .pac-card {
-        margin: 10px 10px 0 0;
-        border-radius: 2px 0 0 2px;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        outline: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        background-color: #fff;
-        font-family: Roboto;
-      }
-
-      #pac-container {
-        padding-bottom: 12px;
-        margin-right: 12px;
-      }
-
-      .pac-controls {
-        display: inline-block;
-        padding: 5px 11px;
-      }
-
-      .pac-controls label {
-        font-family: Roboto;
-        font-size: 13px;
-        font-weight: 300;
-      }
-
-      #pac-input {
-        background-color: #fff;
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-        margin-left: 12px;
-        padding: 0 11px 0 13px;
-        text-overflow: ellipsis;
-        width: 400px;
-      }
-
-      #pac-input:focus {
-        border-color: #4d90fe;
-      }
-
-      #title {
-        color: #fff;
-        background-color: #4d90fe;
-        font-size: 25px;
-        font-weight: 500;
-        padding: 6px 12px;
-      }
-      #target {
-        width: 345px;
-      }
-    </style>
-    <!--
+    
+    #map {
+      height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    #description {
+      font-family: Roboto;
+      font-size: 15px;
+      font-weight: 300;
+    }
+    
+    #infowindow-content .title {
+      font-weight: bold;
+    }
+    
+    #infowindow-content {
+      display: none;
+    }
+    
+    #map #infowindow-content {
+      display: inline;
+    }
+    
+    .pac-card {
+      margin: 10px 10px 0 0;
+      border-radius: 2px 0 0 2px;
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      background-color: #fff;
+      font-family: Roboto;
+    }
+    
+    #pac-container {
+      padding-bottom: 12px;
+      margin-right: 12px;
+    }
+    
+    .pac-controls {
+      display: inline-block;
+      padding: 5px 11px;
+    }
+    
+    .pac-controls label {
+      font-family: Roboto;
+      font-size: 13px;
+      font-weight: 300;
+    }
+    
+    #pac-input {
+      background-color: #fff;
+      font-family: Roboto;
+      font-size: 15px;
+      font-weight: 300;
+      margin-left: 12px;
+      padding: 0 11px 0 13px;
+      text-overflow: ellipsis;
+      width: 400px;
+    }
+    
+    #pac-input:focus {
+      border-color: #4d90fe;
+    }
+    
+    #title {
+      color: #fff;
+      background-color: #4d90fe;
+      font-size: 25px;
+      font-weight: 500;
+      padding: 6px 12px;
+    }
+    
+    #target {
+      width: 345px;
+    }
+  </style>
+  <!--
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. 
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <!--
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+  <!--
       %PUBLIC_URL% will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
 
@@ -101,26 +107,30 @@
       work correctly both with client-side routing and a non-root public URL.
     -->
 
-<!--import script for search feature-->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap"
-         async defer></script>
-         
-  </head>
-  <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <div id="root"></div>
-     <input id="pac-input" class="controls" type="text" placeholder="Search">
-    <div id="map">
-<script>
-window.markers = "heyeyeye";
-                    function initMap() {
+  <!--import script for search feature-->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap"
+    async defer></script>
+</head>
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div id="root"></div>
+  <input id="pac-input" class="controls" type="text" placeholder="Search">
+  <div id="map">
+    <script>
+
+      //Pin list and route list are declared as global, need to be referenced and mutable via App.js
+      window.markers = "test";
+
+      //Create map
+      function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: -34.397, lng: 150.644},
+          center: { lat: -34.397, lng: 150.644 },
           zoom: 8
         });
 
+        //Initialize drawing tools
         var drawingManager = new google.maps.drawing.DrawingManager({
           drawingMode: google.maps.drawing.OverlayType.MARKER,
           drawingControl: true,
@@ -128,7 +138,7 @@ window.markers = "heyeyeye";
             position: google.maps.ControlPosition.TOP_RIGHT,
             drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
           },
-          markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
+          markerOptions: { icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png' },
           circleOptions: {
             fillColor: '#ffff00',
             fillOpacity: 1,
@@ -138,22 +148,22 @@ window.markers = "heyeyeye";
             zIndex: 1
           }
         });
+
         drawingManager.setMap(map);
 
-        google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
-           markers.push(marker);
+        //Add newly drawn pins and routes to the global lists
+        google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function (marker) {
+          markers.push(marker);
         });
 
-         google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
-           lines.push(line);
+        google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function (line) {
+          lines.push(line);
         });
       }
-        </script>
-    </div>
-    
-  </body>
-  </script>
- 
+    </script>
+  </div>
+
+</body>
+</script>
+
 </html>
-
-
