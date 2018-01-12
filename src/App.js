@@ -7,7 +7,7 @@ import FileUploader from 'react-firebase-file-uploader';
 const storage = firebase.storage().ref()
 
 //Need a reference to google object from index.html
-const google = window.google;
+//const google = window.google;
 
 var mapName = "";
 var userID;
@@ -20,8 +20,8 @@ var listItems;
 var mapsChecked = false;
 
 //Lists of routes and pins
-var markers = [];
-var lines = [];
+//var markers = [];
+//var lines = [];
 
 //The number of pictures associated with the currently loaded map
 var currentMapPictures = 0;
@@ -133,21 +133,21 @@ class App extends Component {
   save() {
 
     //Test mutability
-    window.markers += " marker";
-    console.log("markers " + window.markers);
+   // window.markers += " marker";
+    //console.log("markers " + window.markers);
     var lineData;
     var pinData;
 
     //document.getElementById("savedata").value = "";
 
     //Add pins and routes to lists
-    for (var i = 0; i < markers.length; i++) {
-      var marker = markers[i].position;
+    for (var i = 0; i < window.markers.length; i++) {
+      var marker = window.markers[i].position;
       pinData += marker + "+";
     }
 
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i].getPath().getArray();
+    for (var i = 0; i < window.lines.length; i++) {
+      var line = window.lines[i].getPath().getArray();
       lineData += line + "+";
     }
 

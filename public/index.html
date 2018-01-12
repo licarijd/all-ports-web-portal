@@ -121,7 +121,8 @@
     <script>
 
       //Pin list and route list are declared as global, need to be referenced and mutable via App.js
-      window.markers = "test";
+      window.markers = [];
+      window.lines = [];
 
       //Create map
       function initMap() {
@@ -152,12 +153,14 @@
         drawingManager.setMap(map);
 
         //Add newly drawn pins and routes to the global lists
-        google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function (marker) {
+        google.maps.event.addDomListener(drawingManager, 'markercomplete', function (marker) {
           markers.push(marker);
+          console.log("MARKER ADDED");
         });
 
-        google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function (line) {
+        google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function (line) {
           lines.push(line);
+          console.log("LINE ADDED");
         });
       }
     </script>
