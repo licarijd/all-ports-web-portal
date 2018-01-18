@@ -9,8 +9,10 @@ const storage = firebase.storage().ref()
 //Need a reference to google object from index.html
 //const google = window.google;
 
+var mapNameSnapshots = null;
 var mapName = "";
 var userID;
+var mapButtonList = [];
 
 //References the list of all of the user's maps
 var allMaps = [];
@@ -46,12 +48,34 @@ class App extends Component {
 
   //Adds maps to a list
   createMapList() {
-    const item = this.state.itemArray;
-    const title = 'test map';
-    const text = 'test map description';
+if (!mapsChecked) {
+  var temp = "";
+mapsChecked = true;
+    //Get the names of all of a user's maps, and add to a list. This will be used to generate links in the 'maps' section
+      var db = firebase.database();
+      var ref = db.ref('users/' + userID + '/maps/');
+      ref.orderByChild("markers").on("child_added", function (snapshot) {
+        
+         mapNameSnapshots+="|"+snapshot.key; 
+        console.log(snapshot.key + " markers " + snapshot.val().markers);
+        allMaps.push(snapshot.key);
+        //temp=latestSnapshot.val();
+        console.log("MAPS :" + allMaps + temp);
+        });
+
+        //console.log("MAPS fg:" + allMaps + temp + latestSnapshot);
+
+        const item = this.state.itemArray;
+    const title = "dfdfdf";
+    const text = 'map description';
     item.push({ title, text })
     this.setState({ itemArray: item })
+      //});
+
+}
   }
+
+  
 
   //Update map nme field with user input
   handleChange(event) {
@@ -156,10 +180,19 @@ class App extends Component {
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(currentMapPictures);
   }
+generateButtonList(){
 
+  console.log("snap" + mapNameSnapshots);
+  //var str = "How are you doing today?";
+mapButtonList = mapNameSnapshots.split("|");
+///this.itemArray = mapButtonList
+console.log("snap" + mapButtonList);
+}
   load() {
-
-    //Test loading an image from Firebase
+    
+      
+    
+ //Test loading an image from Firebase
     this.getImage('/images/test');
 
     /* Create reference to maps in Firebase Database */
@@ -171,19 +204,38 @@ class App extends Component {
       console.log("mapPlotData : " + mapPlotData.text);
 
       //Get the names of all of a user's maps, and add to a list. This will be used to generate links in the 'maps' section
-      var db = firebase.database();
-      var ref = db.ref('users/' + userID + '/maps/');
+      //var db = firebase.database();
+      /*var ref = db.ref('users/' + userID + '/maps/');
       ref.orderByChild("markers").on("child_added", function (snapshot) {
         console.log(snapshot.key + " markers " + snapshot.val().markers);
         allMaps.push(snapshot.val().markers);
-      });
+      });*/
 
       //Only generate the list of maps once
-      if (!mapsChecked) {
+      
         this.createMapList();
-      }
-      mapsChecked = true;
+        
+      
     })
+
+    //console.log("MAPPLOTDATA: " + messagesRef.v);
+  }
+
+  getMapData(mapID){
+    console.log(mapID);
+    var markerDataDtring;
+    var routeDataString;
+
+    var db = firebase.database();
+    var routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/lines/');
+    routeRef.orderByChild("markers").on("child_added", function (snapshot) {
+        
+        routeDataString+=snapshot.val(); 
+        console.log(" markers data" + snapshot.val());
+        });
+    
+    var routeData = routeDataString.split("+");   
+    console.log("routelist: " + routeData[0])
   }
 
   //Render introduction overlay when web app starts
@@ -223,11 +275,15 @@ class App extends Component {
             }
           </div>
           <div>
-            {this.state.itemArray.map((item, index) => {
+            {mapNameSnapshots==null ? false : this.generateButtonList() 
+            }
+          </div>
+          <div>
+            {mapButtonList.map((item, index) => {
               return (
                 <div className="box" key={index}>
                   <div>
-                    <button>{item.title}</button>
+                    <button onClick={() => this.getMapData(item)}>{item/*.title*/}</button>
                   </div>
                 </div>
               )
@@ -278,6 +334,13 @@ class App extends Component {
         userID = user.uid;
       }
     });
+
+    /*f (!mapsChecked) {
+        console.log("create map list");
+        this.createMapList();
+      }
+      mapsChecked = true;*/
+      //mapsChecked = true;
   }
 
 
