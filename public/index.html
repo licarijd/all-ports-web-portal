@@ -150,6 +150,20 @@
           }
         });
 
+                var flightPlanCoordinates = [
+          {lat: -34.39784494644986, lng: 150.611572265625},
+          {lat: -34.55181136917047, lng: 150.2874755859375}
+        ];
+        var flightPath = new google.maps.Polyline({
+          path: flightPlanCoordinates,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+
+        flightPath.setMap(map);
+
         drawingManager.setMap(map);
 
         //Add newly drawn pins and routes to the global lists

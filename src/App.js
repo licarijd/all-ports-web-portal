@@ -9,6 +9,9 @@ const storage = firebase.storage().ref()
 //Need a reference to google object from index.html
 //const google = window.google;
 
+var currentRouteObj = null;
+var currentMarkerObj = null;
+
 var mapNameSnapshots = null;
 var mapName = "";
 var userID;
@@ -234,8 +237,41 @@ console.log("snap" + mapButtonList);
         console.log(" markers data" + snapshot.val());
         });
     
-    var routeData = routeDataString.split("+");   
-    console.log("routelist: " + routeData[0])
+    routeDataString = routeDataString.substr(18);
+    
+    routeDataString = routeDataString.replace("(", "");
+    routeDataString = routeDataString.replace(" ", "");
+    var routeData = routeDataString;
+    
+    routeData = routeDataString.split("+");  
+
+  var routeDataCoordinates1 = [];
+  var routeDataCoordinates2 = [
+  [1, 2],
+  [3, 4],
+  [5, 6]
+];
+  for (var i = 0; i < routeData.length; ++i){
+
+    //routeData[i] = routeData[i].replace(" ", ""); 
+    //routeData[i] = routeData[i].replace(",", ""); 
+    //routeData[i] = routeData[i].replace(")", "");
+    routeDataCoordinates1[i] = routeData[i].split(")"); 
+    //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(" ", "");       
+    //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(")", "");
+    
+    for (var j = 0; j < routeDataCoordinates1[i].length; ++j){
+        routeDataCoordinates2[i][j] = routeDataCoordinates1[i][j].split(",");
+        //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(" ", "");       
+        //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(")", "");
+    }
+    //rv[i] = arr[i];
+
+    //var car = {type:"Fiat", model:"500", color:"white"};
+  }
+  console.log("routeDataCoordinates2: " + routeDataCoordinates2[0][1][1].replace("(", ""));
+  //disregard position 0, remove bracket from [1]
+    console.log("routelist: " + routeData[0]);
   }
 
   //Render introduction overlay when web app starts
