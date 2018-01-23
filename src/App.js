@@ -7,7 +7,7 @@ import FileUploader from 'react-firebase-file-uploader';
 const storage = firebase.storage().ref()
 
 //Need a reference to google object from index.html
-//const google = window.google;
+const google = window.google;
 
 window.currentRouteObj = [];
 var currentMarkerObj = null;
@@ -229,6 +229,15 @@ console.log("snap" + mapButtonList);
     //console.log("MAPPLOTDATA: " + messagesRef.v);
   }
 
+  test(){
+    console.log("GOOGLEOBJ " + google)
+    setTimeout(function(){
+    window.history.go(-1);
+    window.history.go(1);
+},100); 
+    
+  }
+
   getMapData(mapID){
     var test =['{ "name":"John", "age":30, "city":"New York"}+5'];/*[
           {lat: -34.39784494644986, lng: 150.611572265625},
@@ -310,7 +319,8 @@ for (var i = 0; i < 2; ++i){
   //Render introduction overlay when web app starts
   render() {
     return (
-      <div id="interctable">
+      <div id="interctable" >
+        
         <div id="intro">
           <div className="dimmed"></div>
           <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
@@ -318,6 +328,9 @@ for (var i = 0; i < 2; ++i){
             Okay, let's start
                </button>
         </div>
+        <button onClick={this.test} className="load-button">
+            TEST
+          </button>
         <div id="top-panel" className="top-panel">
           <img src={logo} className="App-logo" alt="logo" />
           <div className="wrapper">
@@ -410,6 +423,15 @@ for (var i = 0; i < 2; ++i){
       }
       mapsChecked = true;*/
       //mapsChecked = true;
+      if(google){
+      window.initMap = this.initMap;
+      loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ&libraries=drawing&callback=initMap')
+    } else {
+    
+       setTimeout(function(){
+    window.location.reload(true);
+},3000);
+  }
   }
 
 
@@ -425,7 +447,7 @@ for (var i = 0; i < 2; ++i){
 
 
 
- /* initMap = function () {
+  initMap = function () {
      var map = new google.maps.Map(document.getElementById('map'), {
        center: {lat: -34.397, lng: 150.644},
        zoom: 8
@@ -452,23 +474,23 @@ for (var i = 0; i < 2; ++i){
 
 drawingManager.setMap(map);
 
-    google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
+  /*  google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
     });
 
      google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
        lines.push(line);
-    });
+    });*/
 
-  }*/
+  }
 }
 
-/*function loadJS(src) {
+function loadJS(src) {
   var ref = window.document.getElementsByTagName("script")[0];
   var script = window.document.createElement("script");
   script.src = src;
   script.async = true;
   ref.parentNode.insertBefore(script, ref);
-}*/
+}
 
 export default App;

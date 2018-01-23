@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
   <meta charset="utf-8">
   <title>Places Searchbox</title>
@@ -118,7 +119,7 @@
   <div id="root"></div>
   <input id="pac-input" class="controls" type="text" placeholder="Search">
   <div id="map">
-    <script>
+   <!-- <script>
 
       //Pin list and route list are declared as global, need to be referenced and mutable via App.js
       window.markers = [];
@@ -157,7 +158,7 @@ console.log("str:"+t);
 console.log("arr:"+obj[0]);
 var obj2 = JSON.parse(obj[0]);
 console.log("obj:"+obj2.name);
-
+if (obj2.name === "John"){
                 var flightPlanCoordinates = [];
                 flightPlanCoordinates = window.test;
         var flightPath = new google.maps.Polyline({
@@ -183,7 +184,8 @@ console.log("obj:"+obj2.name);
           console.log("LINE ADDED");
         });
       }
-    </script>
+      }
+    </script>-->
   </div>
 
 </body>
