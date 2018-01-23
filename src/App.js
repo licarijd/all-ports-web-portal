@@ -303,7 +303,7 @@ for (var i = 0; i < 2; ++i){
       var point = {lat:routeDataCoordinates2[i][j][0].replace("(", ""), lng:routeDataCoordinates2[i][j][1].replace("(", "")};
       //console.log("routeDataCoordinates23333: " + "lat " + routeDataCoordinates2[i][j][0].replace("(", "") + "  " + "lng " + routeDataCoordinates2[i][j][1].replace("(", "") /*point.lat + "  " + point.lng*/);
       window.currentRouteObj.push(point);
-      console.log("obj: " + point.lat + "   " + point.lng);
+      console.log("obj:   " + point.lat + "   " + point.lng);
     }
   }
 
