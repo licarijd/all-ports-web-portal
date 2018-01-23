@@ -150,10 +150,16 @@
           }
         });
 
-                var flightPlanCoordinates = [
-          {lat: -34.39784494644986, lng: 150.611572265625},
-          {lat: -34.55181136917047, lng: 150.2874755859375}
-        ];
+        var t =localStorage.getItem("test");
+
+console.log("str:"+t);
+        var obj = t.split("+");
+console.log("arr:"+obj[0]);
+var obj2 = JSON.parse(obj[0]);
+console.log("obj:"+obj2.name);
+
+                var flightPlanCoordinates = [];
+                flightPlanCoordinates = window.test;
         var flightPath = new google.maps.Polyline({
           path: flightPlanCoordinates,
           geodesic: true,

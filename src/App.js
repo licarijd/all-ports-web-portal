@@ -9,7 +9,7 @@ const storage = firebase.storage().ref()
 //Need a reference to google object from index.html
 //const google = window.google;
 
-var currentRouteObj = null;
+window.currentRouteObj = [];
 var currentMarkerObj = null;
 
 var mapNameSnapshots = null;
@@ -23,6 +23,11 @@ var listItems;
 
 //Represents if the map list has been checked at the start of the program
 var mapsChecked = false;
+
+window.test = [
+          {lat: -34.39784494644986, lng: 100.611572265625},
+          {lat: -34.55181136917047, lng: 100.2874755859375}
+        ];
 
 //Lists of routes and pins
 //var markers = [];
@@ -225,7 +230,12 @@ console.log("snap" + mapButtonList);
   }
 
   getMapData(mapID){
-    console.log(mapID);
+    var test =['{ "name":"John", "age":30, "city":"New York"}+5'];/*[
+          {lat: -34.39784494644986, lng: 150.611572265625},
+          {lat: -34.55181136917047, lng: 150.2874755859375}
+        ];*/
+        localStorage.setItem("test", test);
+     console.log(mapID);
     var markerDataDtring;
     var routeDataString;
 
@@ -251,17 +261,20 @@ console.log("snap" + mapButtonList);
   [3, 4],
   [5, 6]
 ];
-  for (var i = 0; i < routeData.length; ++i){
+
+var cntr1 = 0;
+var cntr2 = 0;
+  for (var cntr1 = 0; cntr1 < routeData.length; cntr1++){
 
     //routeData[i] = routeData[i].replace(" ", ""); 
     //routeData[i] = routeData[i].replace(",", ""); 
     //routeData[i] = routeData[i].replace(")", "");
-    routeDataCoordinates1[i] = routeData[i].split(")"); 
+    routeDataCoordinates1[cntr1] = routeData[cntr1].split(")"); 
     //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(" ", "");       
     //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(")", "");
     
-    for (var j = 0; j < routeDataCoordinates1[i].length; ++j){
-        routeDataCoordinates2[i][j] = routeDataCoordinates1[i][j].split(",");
+    for (var cntr2 = 0; cntr2 < routeDataCoordinates1[cntr1].length; cntr2++){
+        routeDataCoordinates2[cntr1][cntr2] = routeDataCoordinates1[cntr1][cntr2].split(",");
         //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(" ", "");       
         //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(")", "");
     }
@@ -269,7 +282,27 @@ console.log("snap" + mapButtonList);
 
     //var car = {type:"Fiat", model:"500", color:"white"};
   }
-  console.log("routeDataCoordinates2: " + routeDataCoordinates2[0][1][1].replace("(", ""));
+
+
+for (var i = 0; i < 2; ++i){  
+    for (var j = 0; j<4; ++j){
+      if (j!=0){
+        routeDataCoordinates2[i][j][0] = routeDataCoordinates2[i][j][1];
+        routeDataCoordinates2[i][j][1] = routeDataCoordinates2[i][j][2];
+      
+      }
+      var point = {lat:routeDataCoordinates2[i][j][0].replace("(", ""), lng:routeDataCoordinates2[i][j][1].replace("(", "")};
+      //console.log("routeDataCoordinates23333: " + "lat " + routeDataCoordinates2[i][j][0].replace("(", "") + "  " + "lng " + routeDataCoordinates2[i][j][1].replace("(", "") /*point.lat + "  " + point.lng*/);
+      window.currentRouteObj.push(point);
+      console.log("obj: " + point.lat + "   " + point.lng);
+    }
+  }
+
+
+        
+
+
+  console.log("routeDataCoordinates2: " + routeDataCoordinates2[0][3][2].replace("(", ""));
   //disregard position 0, remove bracket from [1]
     console.log("routelist: " + routeData[0]);
   }
