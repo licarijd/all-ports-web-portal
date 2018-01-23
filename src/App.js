@@ -6,6 +6,10 @@ import FileUploader from 'react-firebase-file-uploader';
 
 const storage = firebase.storage().ref()
 
+
+  var  markers = [];
+ var     lines = [];
+
 //Need a reference to google object from index.html
 const google = window.google;
 
@@ -173,13 +177,13 @@ mapsChecked = true;
     //document.getElementById("savedata").value = "";
 
     //Add pins and routes to lists
-    for (var i = 0; i < window.markers.length; i++) {
-      var marker = window.markers[i].position;
+    for (var i = 0; i < markers.length; i++) {
+      var marker = markers[i].position;
       pinData += marker + "+";
     }
 
-    for (var i = 0; i < window.lines.length; i++) {
-      var line = window.lines[i].getPath().getArray();
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].getPath().getArray();
       lineData += line + "+";
     }
 
@@ -331,7 +335,7 @@ for (var i = 0; i < 2; ++i){
             Okay, let's start
                </button>
         </div>
-        <button onClick={this.test} className="load-button">
+        <button onClick={this.initMap} className="load-button">
             TEST
           </button>
         <div id="top-panel" className="top-panel">
@@ -477,13 +481,34 @@ for (var i = 0; i < 2; ++i){
 
 drawingManager.setMap(map);
 
-  /*  google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
+                var flightPlanCoordinates = [];
+
+                if(window.currentRouteObj[0]){
+                flightPlanCoordinates = [
+          {lat: parseFloat(window.currentRouteObj[0].lat), lng: parseFloat(window.currentRouteObj[0].lng)},
+          {lat: parseFloat(window.currentRouteObj[1].lat), lng: parseFloat(window.currentRouteObj[1].lng)}
+        ];
+          console.log("FLIGHT :" + window.currentRouteObj[0].lat)
+  }
+              
+                //flightPlanCoordinates = window.test;
+        var flightPath = new google.maps.Polyline({
+          path: flightPlanCoordinates,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+
+        flightPath.setMap(map);
+
+    google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
     });
 
      google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
        lines.push(line);
-    });*/
+    });
 
   }
 }
