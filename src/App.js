@@ -270,14 +270,10 @@ console.log("snap" + mapButtonList);
         
       });
     
-    routeDataString = routeDataString.substr(18);
+    if(markerDataString){
     markerDataString = markerDataString.substr(18);
     
-    routeDataString = routeDataString.replace("(", "");
-    routeDataString = routeDataString.replace(" ", "");
-    var routeData = routeDataString;
     
-    routeData = routeDataString.split("+"); 
 
     markerDataString = markerDataString.replace(" ", "");
     var markerData = markerDataString;
@@ -293,10 +289,17 @@ console.log("snap" + mapButtonList);
         var markerDataCoordinate = markerData[i].split(",");
 
         var point = {lat:Number(markerDataCoordinate[0]), lng:Number(markerDataCoordinate[1])};
-      //console.log("routeDataCoordinates23333: " + "lat " + routeDataCoordinates2[i][j][0].replace("(", "") + "  " + "lng " + routeDataCoordinates2[i][j][1].replace("(", "") /*point.lat + "  " + point.lng*/);
       window.currentMarkerObj.push(point);
     }
     console.log(" marker data" + window.currentMarkerObj);
+    }
+if(routeDataString){
+routeDataString = routeDataString.substr(18);
+routeDataString = routeDataString.replace("(", "");
+    routeDataString = routeDataString.replace(" ", "");
+    var routeData = routeDataString;
+    
+    routeData = routeDataString.split("+"); 
 
   var routeDataCoordinates1 = [];
   var routeDataCoordinates2 = [[],[],[],[],[],[],[],[],[],[],[]];
@@ -305,46 +308,15 @@ var cntr1 = 0;
 var cntr2 = 0;
   for (var cntr1 = 0; cntr1 < routeData.length; cntr1++){
 
-    //routeData[i] = routeData[i].replace(" ", ""); 
-    //routeData[i] = routeData[i].replace(",", ""); 
-    //routeData[i] = routeData[i].replace(")", "");
     routeDataCoordinates1[cntr1] = routeData[cntr1].split(")"); 
     console.log("checking lines " + routeDataCoordinates1[cntr1]);
-    //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(" ", "");       
-    //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(")", "");
     
     for (var cntr2 = 0; cntr2 < routeDataCoordinates1[cntr1].length; cntr2++){
         routeDataCoordinates2[cntr1][cntr2] = routeDataCoordinates1[cntr1][cntr2].split(",");
         
     console.log("checking points in lines " + routeDataCoordinates2[cntr1][cntr2]);
-        //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(" ", "");       
-        //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(")", "");
-
-          //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(" ", "");       
-        //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(")", "");
     }
-    //rv[i] = arr[i];
-
-    //var car = {type:"Fiat", model:"500", color:"white"};
   }
-
-  console.log("CNTR1: " + cntr1 + " CNTR2: " + cntr2);
-
-
-/*for (var i = 0; i <= cntr2; ++i){  
-    for (var j = 0; j<=cntr1; ++j){
-      if (j!=0){
-        routeDataCoordinates2[i][j][0] = routeDataCoordinates2[i][j][1];
-        routeDataCoordinates2[i][j][1] = routeDataCoordinates2[i][j][2];
-      
-      }
-      var point = {lat:routeDataCoordinates2[i][j][0].replace("(", ""), lng:routeDataCoordinates2[i][j][1].replace("(", "")};
-      window.currentRouteObj.push(point);
-      console.log("obj:   " + point.lat + "   " + point.lng);
-    }
-    console.log("next");
-    window.currentRouteObj.push("new");
-  }*/
 
   for (var i = 0; i < routeDataCoordinates2.length-1; ++i){  
     for (var j = 0; j<routeDataCoordinates2[i].length-1; ++j){
@@ -357,17 +329,9 @@ var cntr2 = 0;
       window.currentRouteObj.push(point);
       console.log("obj:   " + point.lat + "   " + point.lng);
     }
-    console.log("next");
     window.currentRouteObj.push("new");
   }
-
-
-        
-
-
-  console.log("routeDataCoordinates2: " + routeDataCoordinates2[0][3][2].replace("(", ""));
-  //disregard position 0, remove bracket from [1]
-    console.log("routelist: " + routeData[0]);
+  }
   }
 
   //Render introduction overlay when web app starts
