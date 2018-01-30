@@ -14,7 +14,7 @@ const storage = firebase.storage().ref()
 const google = window.google;
 
 window.currentRouteObj = [];
-var currentMarkerObj = null;
+window.currentMarkerObj = [];
 
 var mapNameSnapshots = null;
 var mapName = "";
@@ -180,11 +180,14 @@ mapsChecked = true;
     for (var i = 0; i < markers.length; i++) {
       var marker = markers[i].position;
       pinData += marker + "+";
+      console.log("pindata add");
     }
 
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].getPath().getArray();
       lineData += line + "+";
+      
+      console.log("linedata add");
     }
 
     //Push all map data to Firebase
@@ -249,7 +252,7 @@ console.log("snap" + mapButtonList);
         ];*/
         localStorage.setItem("test", test);
      console.log(mapID);
-    var markerDataDtring;
+    var markerDataString;
     var routeDataString;
 
     var db = firebase.database();
@@ -257,23 +260,46 @@ console.log("snap" + mapButtonList);
     routeRef.orderByChild("markers").on("child_added", function (snapshot) {
         
         routeDataString+=snapshot.val(); 
-        console.log(" markers data" + snapshot.val());
-        });
+        console.log(" routedata data" + snapshot.val());
+      });
+      
+    routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markers/');
+    routeRef.orderByChild("markers").on("child_added", function (snapshot) {
+        
+        markerDataString+=snapshot.val(); 
+        
+      });
     
     routeDataString = routeDataString.substr(18);
+    markerDataString = markerDataString.substr(18);
     
     routeDataString = routeDataString.replace("(", "");
     routeDataString = routeDataString.replace(" ", "");
     var routeData = routeDataString;
     
-    routeData = routeDataString.split("+");  
+    routeData = routeDataString.split("+"); 
+
+    markerDataString = markerDataString.replace(" ", "");
+    var markerData = markerDataString;
+    
+    markerData = markerDataString.split("+"); 
+
+    for (var i=0;i<markerData.length;i++){
+
+        markerData[i] = markerData[i].replace("(", "");
+        markerData[i] = markerData[i].replace(")", "");
+        markerData[i] = markerData[i].replace(" ", "");
+
+        var markerDataCoordinate = markerData[i].split(",");
+
+        var point = {lat:Number(markerDataCoordinate[0]), lng:Number(markerDataCoordinate[1])};
+      //console.log("routeDataCoordinates23333: " + "lat " + routeDataCoordinates2[i][j][0].replace("(", "") + "  " + "lng " + routeDataCoordinates2[i][j][1].replace("(", "") /*point.lat + "  " + point.lng*/);
+      window.currentMarkerObj.push(point);
+    }
+    console.log(" marker data" + window.currentMarkerObj);
 
   var routeDataCoordinates1 = [];
-  var routeDataCoordinates2 = [
-  [1, 2],
-  [3, 4],
-  [5, 6]
-];
+  var routeDataCoordinates2 = [[],[],[],[],[],[],[],[],[],[],[]];
 
 var cntr1 = 0;
 var cntr2 = 0;
@@ -283,11 +309,14 @@ var cntr2 = 0;
     //routeData[i] = routeData[i].replace(",", ""); 
     //routeData[i] = routeData[i].replace(")", "");
     routeDataCoordinates1[cntr1] = routeData[cntr1].split(")"); 
+    console.log("checking lines " + routeDataCoordinates1[cntr1]);
     //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(" ", "");       
     //routeDataCoordinates1[i] = routeDataCoordinates1[i].replace(")", "");
     
     for (var cntr2 = 0; cntr2 < routeDataCoordinates1[cntr1].length; cntr2++){
         routeDataCoordinates2[cntr1][cntr2] = routeDataCoordinates1[cntr1][cntr2].split(",");
+        
+    console.log("checking points in lines " + routeDataCoordinates2[cntr1][cntr2]);
         //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(" ", "");       
         //routeDataCoordinates2[i] = routeDataCoordinates2[i][j].replace(")", "");
 
@@ -516,16 +545,32 @@ drawingManager.setMap(map);
 
           console.log("FLIGHT :" + window.currentRouteObj[0].lat)
   }
+
+  if(window.currentMarkerObj[0]){
+
+    for (var i=0;i<window.currentMarkerObj.length-1;i++){
+    console.log( window.currentMarkerObj[i].lat + "mmmmm" + window.currentMarkerObj[i].lng)
+      var marker = new google.maps.Marker({
+          position: window.currentMarkerObj[i],
+          map: map,
+          title: 'Hello World!'
+        });
+      }
+      
+  }
               
                 //flightPlanCoordinates = window.test;
         
 
-    google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
+    google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
+       console.log("added");
     });
 
-     google.maps.event.addDomListener(window.drawingManager, 'polylinecomplete', function(line) {
+     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
        lines.push(line);
+       
+       console.log("added");
     });
 
   }
