@@ -299,9 +299,11 @@ var cntr2 = 0;
     //var car = {type:"Fiat", model:"500", color:"white"};
   }
 
+  console.log("CNTR1: " + cntr1 + " CNTR2: " + cntr2);
 
-for (var i = 0; i < 2; ++i){  
-    for (var j = 0; j<4; ++j){
+
+for (var i = 0; i <= cntr2; ++i){  
+    for (var j = 0; j<=cntr1; ++j){
       if (j!=0){
         routeDataCoordinates2[i][j][0] = routeDataCoordinates2[i][j][1];
         routeDataCoordinates2[i][j][1] = routeDataCoordinates2[i][j][2];
@@ -312,6 +314,8 @@ for (var i = 0; i < 2; ++i){
       window.currentRouteObj.push(point);
       console.log("obj:   " + point.lat + "   " + point.lng);
     }
+    console.log("next");
+    window.currentRouteObj.push("new");
   }
 
 
@@ -484,15 +488,16 @@ drawingManager.setMap(map);
                 var flightPlanCoordinates = [];
 
                 if(window.currentRouteObj[0]){
-                flightPlanCoordinates = [
+                /*flightPlanCoordinates = [
           {lat: parseFloat(window.currentRouteObj[0].lat), lng: parseFloat(window.currentRouteObj[0].lng)},
           {lat: parseFloat(window.currentRouteObj[1].lat), lng: parseFloat(window.currentRouteObj[1].lng)}
-        ];
-          console.log("FLIGHT :" + window.currentRouteObj[0].lat)
-  }
-              
-                //flightPlanCoordinates = window.test;
-        var flightPath = new google.maps.Polyline({
+        ];*/
+        flightPlanCoordinates = [];
+        for (var i=0;i<window.currentRouteObj.length;i++){
+
+            if (window.currentRouteObj[i]=="new"){
+              console.log("new section");
+                var flightPath = new google.maps.Polyline({
           path: flightPlanCoordinates,
           geodesic: true,
           strokeColor: '#FF0000',
@@ -501,6 +506,19 @@ drawingManager.setMap(map);
         });
 
         flightPath.setMap(map);
+        flightPlanCoordinates = [];
+            } else{
+
+                
+            flightPlanCoordinates.push({lat: parseFloat(window.currentRouteObj[i].lat), lng: parseFloat(window.currentRouteObj[i].lng)});
+            }
+        }
+
+          console.log("FLIGHT :" + window.currentRouteObj[0].lat)
+  }
+              
+                //flightPlanCoordinates = window.test;
+        
 
     google.maps.event.addDomListener(window.drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
