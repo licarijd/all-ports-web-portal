@@ -331,7 +331,7 @@ var cntr2 = 0;
   console.log("CNTR1: " + cntr1 + " CNTR2: " + cntr2);
 
 
-for (var i = 0; i <= cntr2; ++i){  
+/*for (var i = 0; i <= cntr2; ++i){  
     for (var j = 0; j<=cntr1; ++j){
       if (j!=0){
         routeDataCoordinates2[i][j][0] = routeDataCoordinates2[i][j][1];
@@ -339,7 +339,21 @@ for (var i = 0; i <= cntr2; ++i){
       
       }
       var point = {lat:routeDataCoordinates2[i][j][0].replace("(", ""), lng:routeDataCoordinates2[i][j][1].replace("(", "")};
-      //console.log("routeDataCoordinates23333: " + "lat " + routeDataCoordinates2[i][j][0].replace("(", "") + "  " + "lng " + routeDataCoordinates2[i][j][1].replace("(", "") /*point.lat + "  " + point.lng*/);
+      window.currentRouteObj.push(point);
+      console.log("obj:   " + point.lat + "   " + point.lng);
+    }
+    console.log("next");
+    window.currentRouteObj.push("new");
+  }*/
+
+  for (var i = 0; i < routeDataCoordinates2.length-1; ++i){  
+    for (var j = 0; j<routeDataCoordinates2[i].length-1; ++j){
+      if (j!=0){
+        routeDataCoordinates2[i][j][0] = routeDataCoordinates2[i][j][1];
+        routeDataCoordinates2[i][j][1] = routeDataCoordinates2[i][j][2];
+      
+      }
+      var point = {lat:routeDataCoordinates2[i][j][0].replace("(", ""), lng:routeDataCoordinates2[i][j][1].replace("(", "")};
       window.currentRouteObj.push(point);
       console.log("obj:   " + point.lat + "   " + point.lng);
     }
@@ -536,6 +550,8 @@ drawingManager.setMap(map);
 
         flightPath.setMap(map);
         flightPlanCoordinates = [];
+        
+      
             } else{
 
                 
@@ -543,7 +559,8 @@ drawingManager.setMap(map);
             }
         }
 
-          console.log("FLIGHT :" + window.currentRouteObj[0].lat)
+          console.log("FLIGHT :" + window.currentRouteObj[0].lat);
+          window.currentRouteObj = [];
   }
 
   if(window.currentMarkerObj[0]){
@@ -556,6 +573,8 @@ drawingManager.setMap(map);
           title: 'Hello World!'
         });
       }
+
+      window.currentMarkerObj = [];
       
   }
               
