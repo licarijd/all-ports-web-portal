@@ -6,9 +6,11 @@ import FileUploader from 'react-firebase-file-uploader';
 
 const storage = firebase.storage().ref()
 
-
+//var imagesLoaded = false;
   var  markers = [];
  var     lines = [];
+
+ var picCount = null;
 
 //Need a reference to google object from index.html
 const google = window.google;
@@ -38,7 +40,7 @@ window.test = [
 //var lines = [];
 
 //The number of pictures associated with the currently loaded map
-var currentMapPictures = 0;
+
 
 class App extends Component {
 
@@ -46,16 +48,17 @@ class App extends Component {
     super();
     this.state = {
       user: null, 
-
+      currentMapPictures: 0,
       //Map name input field
       mapNameField: 'Please enter your map name',
-      loadedImage: '',
+      loadedImage: [],
       itemArray: []
     }
 
     this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
     this.handleChange = this.handleChange.bind(this);
+    //this.handleUploadSuccess = this.handleUploadSuccess.bind(this);
   }
 
   //Adds maps to a list
@@ -99,12 +102,31 @@ mapsChecked = true;
   //Gets an image via firebase URL and loads it into an element
   getImage = function (image) {
     let { state } = this
+    
+    
     storage.child(`${image}.png`).getDownloadURL().then((url) => {
       state[image] = url
-      this.setState({ loadedImage: state[image] })
+      const tempLoadedImage = this.state.loadedImage;
+      if(image!='/images/pic000'){
+    tempLoadedImage.push(state[image]);
+      }
+      this.setState({ loadedImage: tempLoadedImage })
+    }).catch((error) => {
+        //this.setState({ loadedImage: this.state.loadedImage })
+    })
+    storage.child(`${image}.jpg`).getDownloadURL().then((url) => {
+      state[image] = url
+      const tempLoadedImage = this.state.loadedImage;
+      if(image!='/images/pic000'){
+    tempLoadedImage.push(state[image]);
+      }
+      this.setState({ loadedImage: tempLoadedImage })
     }).catch((error) => {
       // Handle any errors
     })
+
+      
+    console.log("getimage run");
   }
 
   //Update upload info
@@ -116,7 +138,14 @@ mapsChecked = true;
   }
 
   //Increment the image counter when an image is added to a map
-  handleUploadSuccess() { currentMapPictures++; console.log(currentMapPictures) };
+  handleUploadSuccess = () => 
+    this.setState({
+          currentMapPictures: this.state.currentMapPictures+1
+        }); 
+        
+        //currentMapPictures++; 
+        
+        
 
   //Auth functions
   logout() {
@@ -193,7 +222,7 @@ mapsChecked = true;
     //Push all map data to Firebase
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(currentMapPictures);
+    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: 2});
   }
 generateButtonList(){
 
@@ -205,10 +234,37 @@ console.log("snap" + mapButtonList);
 }
   load() {
     
-      
+    //if(mapsChecked){
+        this.getImage('/images/pic000');
+    //}
     
+        //mapsChecked = true;
+        
+    var db = firebase.database();
+var ref = db.ref('users/' + userID + '/maps/pics');
+      ref.orderByChild("pics").on("child_added", function (snapshot) {
+  picCount = snapshot.val();
+  
+  console.log("piccount in: "+picCount);
+}, function (errorObject) {
+  console.log("The read failed: " + errorObject.code);
+});
+
+
+  
  //Test loading an image from Firebase
-    this.getImage('/images/test');
+    //if (!imagesLoaded){
+        //imagesLoaded = true;
+    if(picCount){
+    for (var i =0;i<=picCount;i++){
+      console.log("piccount out: i "+i);
+        this.getImage('/images/pics/pics'+i);
+
+    }
+    }
+    
+   // }
+    //this.getImage('/images/pics/pics1');
 
     /* Create reference to maps in Firebase Database */
     let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
@@ -246,6 +302,8 @@ console.log("snap" + mapButtonList);
   }
 
   getMapData(mapID){
+    
+    //this.getImage('/images/pics/pics1');
     var test =['{ "name":"John", "age":30, "city":"New York"}+5'];/*[
           {lat: -34.39784494644986, lng: 150.611572265625},
           {lat: -34.55181136917047, lng: 150.2874755859375}
@@ -398,7 +456,15 @@ var cntr2 = 0;
           <br /><br />
           <div>
             <br /><br />Photos <br />
-            <img src={this.state.loadedImage} alt="test image" />
+            {this.state.loadedImage.map((item, index) => {
+              return (
+                <div className="box" key={index}>
+                  <div>
+                    <img src={this.state.loadedImage[index]} alt="test image" width="25" height="25"/>
+                  </div>
+                </div>
+              )
+            })}
           </div>
           <form>
             <label>photos:</label>
@@ -408,16 +474,21 @@ var cntr2 = 0;
             {this.state.avatarURL &&
               <img src={this.state.avatarURL} />
             }
-            <FileUploader
-              accept="image/*"
-              name="avatar"
-              filename={mapName + currentMapPictures}
-              storageRef={firebase.storage().ref('images')}
-              onUploadStart={this.handleUploadStart}
-              onUploadError={this.handleUploadError}
-              onUploadSuccess={this.handleUploadSuccess}
-              onProgress={this.handleProgress}
-            />
+            <label style={{backgroundColor: 'steelblue', color: 'white', padding: 10, borderRadius: 4, pointer: 'cursor'}}>
+              Select your awesome avatar
+                    <FileUploader
+                      hidden
+                      accept="image/*"
+                      name="avatar"
+                      filename={mapName + this.state.currentMapPictures}
+                      storageRef={firebase.storage().ref('images/'+mapName)}
+                      onUploadStart={this.handleUploadStart}
+                      //onUploadStart={this.currentMapPictures(mapName + currentMapPictures)}
+                      onUploadError={this.handleUploadError}
+                      onUploadSuccess={this.handleUploadSuccess}
+                      onProgress={this.handleProgress}
+                    />
+              </label>
           </form>
         </div>
         <div id="tools">
@@ -450,6 +521,7 @@ var cntr2 = 0;
     window.location.reload(true);
 },3000);
   }
+  
   }
 
 
