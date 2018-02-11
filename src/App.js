@@ -389,7 +389,10 @@ var cntr2 = 0;
     }
     window.currentRouteObj.push("new");
   }
-  }
+}
+
+this.initMap();
+this.load();
   }
 
   //Render introduction overlay when web app starts
@@ -475,7 +478,7 @@ var cntr2 = 0;
               <img src={this.state.avatarURL} />
             }
             <label style={{backgroundColor: 'steelblue', color: 'white', padding: 10, borderRadius: 4, pointer: 'cursor'}}>
-              Select your awesome avatar
+              +
                     <FileUploader
                       hidden
                       accept="image/*"
@@ -538,6 +541,7 @@ var cntr2 = 0;
 
 
   initMap = function () {
+    
      var map = new google.maps.Map(document.getElementById('map'), {
        center: {lat: -34.397, lng: 150.644},
        zoom: 8
