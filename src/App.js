@@ -53,7 +53,8 @@ class App extends Component {
       //Map name input field
       mapNameField: 'Please enter your map name',
       loadedImage: [],
-      itemArray: []
+      itemArray: [],
+      reloadImages: null
     }
 
     this.login = this.login.bind(this); // <-- add this line
@@ -237,6 +238,7 @@ mapButtonList = mapNameSnapshots.split("|");
 console.log("snap" + mapButtonList);
 }
   load() {
+    //reloadImages = true;
     
     //if(mapsChecked){
         this.getImage('/images/pic000');
@@ -260,6 +262,7 @@ var ref = db.ref('users/' + userID + '/maps/' + mapName + '/pics');
     //if (!imagesLoaded){
         //imagesLoaded = true;
     if(picCount){
+      //this.setState({ loadedImage: [] })
     for (var i =0;i<=picCount;i++){
       console.log("piccount out: i "+i);
         this.getImage('/images/' + mapName + '/' + mapName+i);
@@ -297,17 +300,14 @@ var ref = db.ref('users/' + userID + '/maps/' + mapName + '/pics');
   }
 
   test(){
-    console.log("GOOGLEOBJ " + google)
-    setTimeout(function(){
-    window.history.go(-1);
-    window.history.go(1);
-},100); 
     
   }
 
   getMapData(mapID){
+    this.setState({ loadedImage: [] })
     this.setState({ mapNameField: mapID });
     mapName = mapID + "";
+    this.setState({ reloadImages: true });
     
     //this.getImage('/images/pics/pics1');
     var test =['{ "name":"John", "age":30, "city":"New York"}+5'];/*[
@@ -413,7 +413,7 @@ this.load();
             Okay, let's start
                </button>
         </div>
-        <button onClick={this.initMap} className="load-button">
+        <button onClick={/*this.initMap*/this.test.bind(this)} className="load-button">
             TEST
           </button>
         <div id="top-panel" className="top-panel">
@@ -469,7 +469,7 @@ this.load();
               return (
                 <div className="box" key={index}>
                   <div>
-                    <img src={this.state.loadedImage[index]} alt="test image" width="25" height="25"/>
+                    {this.state.reloadImages? <img id={mapName} src={this.state.loadedImage[index]} alt="test image" width="25" height="25"/> : null}
                   </div>
                 </div>
               )
