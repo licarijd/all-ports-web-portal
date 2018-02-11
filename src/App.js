@@ -11,6 +11,7 @@ const storage = firebase.storage().ref()
  var     lines = [];
 
  var picCount = null;
+ var pictures = 0;
 
 //Need a reference to google object from index.html
 const google = window.google;
@@ -222,7 +223,10 @@ mapsChecked = true;
     //Push all map data to Firebase
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: 2});
+    console.log("piccount: " + this.state.currentMapPictures);
+    //firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/pics").push(this.state.currentMapPictures);
+    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentMapPictures});
+    console.log("mapname: " + mapName);
   }
 generateButtonList(){
 
@@ -241,7 +245,7 @@ console.log("snap" + mapButtonList);
         //mapsChecked = true;
         
     var db = firebase.database();
-var ref = db.ref('users/' + userID + '/maps/pics');
+var ref = db.ref('users/' + userID + '/maps/' + mapName + '/pics');
       ref.orderByChild("pics").on("child_added", function (snapshot) {
   picCount = snapshot.val();
   
@@ -258,7 +262,7 @@ var ref = db.ref('users/' + userID + '/maps/pics');
     if(picCount){
     for (var i =0;i<=picCount;i++){
       console.log("piccount out: i "+i);
-        this.getImage('/images/pics/pics'+i);
+        this.getImage('/images/' + mapName + '/' + mapName+i);
 
     }
     }
@@ -302,6 +306,8 @@ var ref = db.ref('users/' + userID + '/maps/pics');
   }
 
   getMapData(mapID){
+    this.setState({ mapNameField: mapID });
+    mapName = mapID + "";
     
     //this.getImage('/images/pics/pics1');
     var test =['{ "name":"John", "age":30, "city":"New York"}+5'];/*[
@@ -421,7 +427,7 @@ this.load();
           </div>
           <div className="wrapper">
             {this.state.user ?
-              <button onClick={this.save}>Save current map</button>
+              <button onClick={this.save.bind(this)}>Save current map</button>
               :
               <button onClick={this.login}>Sign in to save current map</button>
             }
