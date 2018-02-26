@@ -4,7 +4,10 @@
 
 .App-logo {
   /*animation: App-logo-spin infinite 20s linear;*/
-  height: 80px;
+  position: fixed;
+  top: 2%;
+  left: 6%;
+  height: 35px;
 }
 
 .App-header {
@@ -29,13 +32,52 @@
   z-index: 2;
 }
 
+@font-face {
+    font-family: Avenir;
+    src: url(AvenirLTStd-Light.woff);
+}
+
 .App-intro-button {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 53%;
+  left: 42%;
   margin-top: -10px;
   margin-left: 10px;
+  width: 250px;
+  height: 60px;
+  border-radius: 5px;
+  background-color: #2883e2;
   z-index: 2;
+  font-family: Avenir;
+  font-size: 24px;
+  font-weight: 900;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
+}
+
+.Quick-tips-to-famili {
+  position: fixed;
+  font-size: large;
+  color: white;
+  top: 50%;
+  left: 40%;
+  margin-top: -50px;
+  margin-left: -100px;
+  z-index: 2;
+  width: 623px;
+  height: 41px;
+  font-family: Avenir;
+  font-size: 30px;
+  font-weight: 900;
+  font-style: bold;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
 }
 
 .dimmed {
@@ -45,17 +87,75 @@
   top:0;
   bottom:0;
   z-index: 2;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .side-panel {
   position: fixed;
-  left:0;
-  right:70%;
-  top:10%;
-  bottom:0;
+  left:0%;
+  right:95%;
+  top:0%;
+  bottom:0%;
   z-index: 1;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: #343a41;
+}
+
+.settings-button {
+  position: fixed;
+  height: 45px;	
+  width: 45px;	
+  background-color: #2883E2;	
+  box-shadow: -1px 3px 0 1px rgba(0,0,0,0.5);
+  position: fixed;
+  left:1%;
+  top:2%;
+  z-index: 1;
+  background-color: #343a41;
+}
+
+.maps-button {
+  position: fixed;
+  height: 45px;	
+  width: 45px;	
+  background-color: #2883E2;	
+  box-shadow: -1px 3px 0 1px rgba(0,0,0,0.5);
+  left:1%;
+  top:14%;
+  z-index: 1;
+  background-color: #343a41;
+}
+
+.collections-button {
+  position: fixed;
+  height: 45px;	
+  width: 45px;	
+  background-color: #2883E2;	
+  box-shadow: -1px 3px 0 1px rgba(0,0,0,0.5);
+  position: fixed;
+  left:1%;
+  top:26%;
+  z-index: 1;
+  background-color: #343a41;
+}
+
+.favs-button {
+  position: fixed;
+  height: 45px;	
+  width: 45px;	
+  background-color: #2883E2;	
+  box-shadow: -1px 3px 0 1px rgba(0,0,0,0.5);
+  position: fixed;
+  left:1%;
+  top:38%;
+  z-index: 1;
+  background-color: #343a41;
+}
+
+.Rectangle-10 {
+  position: fixed;
+  left:0%;
+  right:73%;
+  background-color: #343a41;
 }
 
 .textbox {
@@ -70,12 +170,20 @@
 
 .top-panel {
   position: fixed;
-  left:30%;
-  right:20%;
-  top:0;
-  bottom:1000;
+  left:5%;
+  right:0%;
+  top:0%;
+  bottom:92%;
   z-index: 1;
-  background: rgba(0, 0, 0, 0.5);
+  width: 1440px;
+  height: 70px;
+  background-color: #343a41;
+}
+
+.Rectangle {
+  width: 1440px;
+  height: 70px;
+  background-color: #343a41;
 }
 
 .dimmed:after {
@@ -91,7 +199,248 @@
 }
 
 
+.Okay-lets-start {
+  position:relative;
+  width: 180px;
+  height: 33px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+}
 
+.Rectangle-3 {
+  position: absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  z-index: 2;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.search {
+  width: 250px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #ffffff;
+}
+
+.popup-maps-panel {
+  position: fixed;
+  left:5%;
+  right:70%;
+  top:9.4%;
+  bottom:0%;
+  z-index: 1;
+  background-color: #ffffff;
+}
+
+.popup-create-map-panel {
+  position: fixed;
+  left:0%;
+  right:70%;
+  top:0%;
+  bottom:0%;
+  z-index: 1;
+  background-color: #ffffff;
+}
+
+
+.map-details {
+  position: fixed;
+  left:0%;
+  right:70%;
+  top:0%;
+  bottom:0%;
+  z-index: 1;
+  background-color: #ffffff;
+}
+
+.View-your-maps-coll {
+  position: fixed;
+  left: 9%;
+  top: 25%;
+  width: 248px;
+  height: 50px;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  z-index: 2;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.App-view-maps {
+  position: fixed;
+  z-index: 2;
+  left: 5%;
+  top: 19%;
+}
+
+.View-your-user-profi {
+  position: fixed;
+  left: 9%;
+  top: 15%;
+  z-index: 2;
+  width: 325px;
+  height: 25px;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.App-view-settings {
+  position: fixed;
+  z-index: 2;
+  left: 5%;
+  top: 7%;
+}
+
+.Search-for-a-locatio {
+  position: fixed;
+  left: 40%;
+  top: 18%;
+  z-index: 2;
+  width: 312px;
+  height: 50px;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.App-search-arrow {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: 10%;
+}
+
+.When-you-have-a-map {
+  position: fixed;
+  left: 70%;
+  top: 15%;
+  z-index: 2;
+  width: 252px;
+  height: 75px;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.App-map-func {
+  position: fixed;
+  z-index: 2;
+  left: 86%;
+  top: 9%;
+}
+
+.share-map {	
+  position: fixed;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
+  left: 79%;
+  top: 3%;
+  z-index: 1;
+  height: 40px;	
+  width: 120px;	
+  border-radius: 5px;	
+  background-color: #2883E2;
+  }
+
+.save-map {	
+  position: fixed;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
+  left: 87%;
+  top: 3%;
+  z-index: 1;
+  height: 40px;	
+  width: 120px;	
+  border-radius: 5px;	
+  background-color: #2883E2;
+  }
+
+.Begin-by-adding-a-ro {
+  position: fixed;
+  left: 72%;
+  top: 78%;
+  z-index: 2;
+  width: 222px;
+  height: 75px;
+  font-family: Avenir;
+  font-size: 18px;
+  font-weight: 500;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.App-add-arrow {
+  position: fixed;
+  z-index: 2;
+  left: 85%;
+  top: 85%;
+}
+
+.App-add {
+  position: fixed;
+  z-index: 1;
+  left: 90%;
+  top: 85%;
+}
+
+.App-add-map {
+  position: fixed;
+  z-index: 1;
+  left: 87%;
+  top: 83%;
+}
+
+.App-add-route {
+  position: fixed;
+  z-index: 1;
+  left: 92%;
+  top: 78%;
+}
 
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -151,7 +500,14 @@
       }
 
       #pac-input {
-        background-color: #fff;
+        position: fixed;
+        top: 2%;
+        left:36%;
+        right:45%;
+        width: 250px;
+        height: 40px;
+        border-radius: 5px;
+        background-color: #ffffff;
         font-family: Roboto;
         font-size: 15px;
         font-weight: 300;
@@ -159,6 +515,23 @@
         padding: 0 11px 0 13px;
         text-overflow: ellipsis;
         width: 400px;
+        z-index: 1;
+
+        font-family: Avenir;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        text-align: left;
+        color: #2d2d2d;
+      }
+
+      .searchicon {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
       }
 
       #pac-input:focus {

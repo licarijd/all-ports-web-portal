@@ -1,6 +1,18 @@
 import React, { Component } from 'react';
 import firebase, { auth, provider } from './fire.js';
-import logo from './logo.svg';
+import logo from './logo.png';
+import searchArrow from './searcharrow.png';
+import addArrow from './addarrow.png';
+import addIcon from './addicon.png';
+import addMapIcon from './pinicon.png';
+import addRouteIcon from './routeicon.png';
+import mapFuncArrow from './mapfuncarrow.png';
+import viewMapsArrow from './viewmapsarrow.png';
+import viewSettingsArrow from './viewsettingsarrow.png';
+import settingsIcon from './menuicon.png';
+import mapsIcon from './mapicon.png';
+import collectionsIcon from './collectionsicon.png';
+import favsIcon from './favsicon.png';
 import './App.css';
 import FileUploader from 'react-firebase-file-uploader';
 
@@ -34,6 +46,9 @@ var mapButtonList = [];
 
 //Represents if the map list has been checked at the start of the program
 var mapsChecked = false;
+
+//Represents whether or not the map menu is displayed
+var mapDisplayActive = false;
 
 class App extends Component {
 	constructor() {
@@ -148,8 +163,53 @@ class App extends Component {
       });
   }
 
-  //Dismiss intro GUI 
+  //Show/hide GUI elements 
   dismissIntro() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  showMapUI() {
+    var mapsPanel = document.getElementById('popup-maps-panel');
+    mapsPanel.hidden = false;
+  }
+
+  showMapDetails() {
+  	var mapDetails = document.getElementById('map-details');
+  	mapDetails.hidden = false;
+  }
+
+  setCreatePinUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  setCreateRouteUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  setCreateMapUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  setPinDeleteUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  setRouteDeleteUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  delPinConfirmUI() {
+    var introElement = document.getElementById('intro');
+    introElement.hidden = true;
+  }
+
+  delRouteConfirmUI() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
@@ -222,6 +282,7 @@ class App extends Component {
 
   //Retrieve and parse all data from Firebase needed to construct a map's pins and routes
   getMapData(mapID){
+	this.showMapDetails(); 
     this.setState({ loadedImage: [] })
     this.setState({ mapNameField: mapID });
     mapName = mapID + "";
@@ -302,78 +363,51 @@ class App extends Component {
 	//Load the pictures of the map
 	this.load();
   }
-
+  
   //Render introduction overlay when web app starts
   render() {
     return (
       <div id="interctable" >
         <div id="intro">
-          <div className="dimmed"></div>
-          <h1 className="App-intro">Quick tips to familiarize you with Pintionary</h1>
+		<div className="Rectangle-3"></div>
+		  <img src={addArrow} className="App-add-arrow" alt="addArrow" />
+		  <img src={searchArrow} className="App-search-arrow" alt="searchArrow" />
+		  <img src={viewSettingsArrow} className="App-view-settings" alt="viewSettingsArrow" />
+		  <img src={viewMapsArrow} className="App-view-maps" alt="viewMapsArrow" />
+		  <img src={mapFuncArrow} className="App-map-func" alt="mapFuncArrow" />
+          <div className="View-your-maps-coll">View your maps, collections of and faved contents here</div>
+		  <h1 className="Quick-tips-to-famili">Quick tips to familiarize you with Pintionary</h1>
+		  <div className="View-your-user-profi">View your user profile and settings here</div>
+		  <div className="Search-for-a-locatio">Search for a location to begin creating maps with pins and routes</div>
+		  <div className="When-you-have-a-map">When you have a map with pins and routes, these options will appear on the top right</div>
+		  <div className="Begin-by-adding-a-ro">Begin by adding a route or pin to your map through this floating button here</div>
           <button onClick={this.dismissIntro} className="App-intro-button">
             Okay, let's start
                </button>
         </div>
-        <button onClick={/*this.initMap*/this.test.bind(this)} className="load-button">
+		<img src={addIcon} className="App-add" alt="addIcon" />	
+		<img src={addMapIcon} className="App-add-map" alt="addIcon" />	
+		<img src={addRouteIcon} className="App-add-route" alt="addIcon" />	
+        <button hidden onClick={this.test.bind(this)} className="load-button">
             TEST
           </button>
         <div id="top-panel" className="top-panel">
+		<button className="share-map"> Share Map</button>
+		{this.state.user ?
+              <button  className="save-map" onClick={this.save.bind(this)}>Save Map</button>
+              :
+              <button  className="save-map" onClick={this.login}>Sign In</button>
+            }
           <img src={logo} className="App-logo" alt="logo" />
-          <div className="wrapper">
+          <div className = "profile-details"  id="profile-details">
             {this.state.user ?
               <button onClick={this.logout}>Log Out</button>
               :
               <button onClick={this.login}>Ignore this button for now</button>
             }
           </div>
-          <div className="wrapper">
-            {this.state.user ?
-              <button onClick={this.save.bind(this)}>Save current map</button>
-              :
-              <button onClick={this.login}>Sign in to save current map</button>
-            }
-          </div>
-        </div>
-        <div id="side-panel" className="side-panel">
-          <div>
-            {this.state.user && !mapsChecked ? this.load() : false
-            }
-          </div>
-          <div>
-            {mapNameSnapshots==null ? false : this.generateButtonList() 
-            }
-          </div>
-          <div>
-            {mapButtonList.map((item, index) => {
-              return (
-                <div className="box" key={index}>
-                  <div>
-                    <button onClick={() => this.getMapData(item)}>{item/*.title*/}</button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <br /><br />
-          <input
-            type="text"
-            value={this.state.mapNameField}
-            onChange={this.handleChange}
-          />
-          <br /><br />
-          <div>
-            <br /><br />Photos <br />
-            {this.state.loadedImage.map((item, index) => {
-              return (
-                <div className="box" key={index}>
-                  <div>
-                    <img id={mapName} src={this.state.loadedImage[index]} alt="test image" width="25" height="25"/>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <form>
+          <div className = "popup-create-map-panel"  id="popup-create-map-panel">
+			<form>
             <label>photos:</label>
             {this.state.isUploading &&
               <p>Progress: {this.state.progress}</p>
@@ -390,13 +424,56 @@ class App extends Component {
                       filename={mapName + this.state.currentMapPictures}
                       storageRef={firebase.storage().ref('images/'+mapName)}
                       onUploadStart={this.handleUploadStart}
-                      //onUploadStart={this.currentMapPictures(mapName + currentMapPictures)}
                       onUploadError={this.handleUploadError}
                       onUploadSuccess={this.handleUploadSuccess}
                       onProgress={this.handleProgress}
                     />
               </label>
           </form>
+          </div>
+        </div>
+        <div id="side-panel" className="side-panel">
+		  <input type="image" src={settingsIcon} className="settings-button" alt="settingsIcon"/>
+		  <input type="image" onClick={this.showMapUI} src={mapsIcon} className="maps-button" alt="mapsIcon" text="Maps"/>
+		  <input type="image" src={collectionsIcon} className="collections-button" alt="collectionsIcon"/>
+		  <input type="image" src={favsIcon} className="favs-button" alt="favsIcon"/>
+          <div className = "popup-maps-panel"  id="popup-maps-panel">
+            <div>
+              {this.state.user && !mapsChecked ? this.load() : false
+              }
+            </div>
+            <div>
+              {mapNameSnapshots==null ? false : this.generateButtonList()}
+            </div>
+            {mapButtonList.map((item, index) => {
+              return (
+                <div className="box" key={index}>
+                  <div>
+                    <button onClick={() => this.getMapData(item)}>{item/*.title*/}</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div  className = "map-details"  id="map-details">
+          <br /><br />
+          <input
+            type="text"
+            value={this.state.mapNameField}
+            onChange={this.handleChange}
+          />
+          <br /><br />
+            <br /><br />Photos <br />
+            {this.state.loadedImage.map((item, index) => {
+              return (
+                <div className="box" key={index}>
+                  <div>
+                    <img id={mapName} src={this.state.loadedImage[index]} alt="test image" width="25" height="25"/>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
         <div id="tools">
         </div>
@@ -422,7 +499,55 @@ class App extends Component {
        		window.location.reload(true);
 	   	},3000);
   	}
+
+	//Deactivate components
+	var mapsList = document.getElementById('popup-maps-panel');
+    mapsList.hidden = true;
+	var createMapPanel = document.getElementById('popup-create-map-panel');
+    createMapPanel.hidden = true;
+	var mapDetails = document.getElementById('map-details');
+    mapDetails.hidden = true;
+	var profileDetails = document.getElementById('profile-details');
+    profileDetails.hidden = true;
   }
+
+  /**
+       * The CenterControl adds a control to the map that recenters the map on
+       * Chicago.
+       * This constructor takes the control DIV as an argument.
+       * @constructor
+       */
+      /*CenterControl = function(controlDiv, map) {
+
+        // Set CSS for the control border.
+        var controlUI = document.createElement('div');
+        controlUI.style.backgroundColor = '#fff';
+        controlUI.style.border = '2px solid #fff';
+        controlUI.style.borderRadius = '3px';
+        controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+        controlUI.style.cursor = 'pointer';
+        controlUI.style.marginBottom = '22px';
+        controlUI.style.textAlign = 'center';
+        controlUI.title = 'Click to recenter the map';
+        controlDiv.appendChild(controlUI);
+
+        // Set CSS for the control interior.
+        var controlText = document.createElement('div');
+        controlText.style.color = 'rgb(25,25,25)';
+        controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+        controlText.style.fontSize = '16px';
+        controlText.style.lineHeight = '38px';
+        controlText.style.paddingLeft = '5px';
+        controlText.style.paddingRight = '5px';
+        controlText.innerHTML = 'Center Map';
+        controlUI.appendChild(controlText);
+
+        // Setup the click event listeners: simply set the map to Chicago.
+        controlUI.addEventListener('click', function() {
+          drawingMode = google.maps.drawing.OverlayType.POLYLINE;
+        });
+
+	  }*/
 
   //Plot map pins and routes
   initMap = function () {
@@ -430,12 +555,18 @@ class App extends Component {
        center: {lat: -34.397, lng: 150.644},
        zoom: 8
      });
+
+	 /*var centerControlDiv = document.createElement('div');
+     var centerControl = new CenterControl(centerControlDiv, map);
+
+     centerControlDiv.index = 1;
+     map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);*/
  
     var drawingManager = new google.maps.drawing.DrawingManager({
        drawingMode: google.maps.drawing.OverlayType.MARKER,
-       drawingControl: true,
+       drawingControl: false,
        drawingControlOptions: {
-       position: google.maps.ControlPosition.TOP_RIGHT,
+       position: google.maps.ControlPosition.BOTTOM_RIGHT,
        drawingModes: ['marker', 'polyline']
    	},
 
@@ -492,10 +623,16 @@ class App extends Component {
 
       window.currentMarkerObj = []; 
   	}
-	  
+
 	//When a user draws a route or plots a pin, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
+	   //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+
+	   //To remove: markers[markers.length].setMap(null);
+	  // markers.pop
+
+	  //To remove all, loop this
     });
 
     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
