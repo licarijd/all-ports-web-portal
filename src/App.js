@@ -4,8 +4,11 @@ import logo from './logo.png';
 import searchArrow from './searcharrow.png';
 import addArrow from './addarrow.png';
 import addIcon from './addicon.png';
+import subIcon from './subicon.png';
 import addMapIcon from './pinicon.png';
+import downAddMapIcon from './pinicondown.png';
 import addRouteIcon from './routeicon.png';
+import downAddRouteIcon from './routeicondown.png';
 import mapFuncArrow from './mapfuncarrow.png';
 import viewMapsArrow from './viewmapsarrow.png';
 import viewSettingsArrow from './viewsettingsarrow.png';
@@ -49,6 +52,17 @@ var mapsChecked = false;
 
 //Represents whether or not the map menu is displayed
 var mapDisplayActive = false;
+var mapDetailsActive = false;
+var addButtonDown = false;
+var addMapButtonDown = false;
+var addRouteButtonDown = false;
+
+//For testing
+var likes = 0;
+
+//Keep track of the most recent camera position
+var camZoom;
+var camTarget;
 
 class App extends Component {
 	constructor() {
@@ -179,6 +193,13 @@ class App extends Component {
   	mapDetails.hidden = false;
   }
 
+  showDrawUI() {
+  	var addRoute = document.getElementById('App-add-route');
+  	addRoute.hidden = false;
+	var addMap = document.getElementById('App-add-map');
+  	addMap.hidden = false;
+  }
+
   setCreatePinUI() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
@@ -214,6 +235,14 @@ class App extends Component {
     introElement.hidden = true;
   }
 
+  mapMode(){
+
+  }
+
+  //routeMode(){
+	  
+  //}
+
   save() {
 
     var lineData;
@@ -234,7 +263,38 @@ class App extends Component {
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentMapPictures});
+	var dateAdded = new Date();
+	var dd = dateAdded.getDate();
+	var mm = dateAdded.getMonth()+1; //January is 0!
+
+	var yyyy = dateAdded.getFullYear();
+	if(dd<10){
+		dd='0'+dd;
+	} 
+	if(mm<10){
+		mm='0'+mm;
+	} 
+	var dateAdded = dd+'/'+mm+'/'+yyyy;
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
+	
+	
+	if (!camZoom){
+		camZoom = 8;
+	}
+
+	if (!camTarget){
+		camTarget = {lat: -34.397, lng: 150.644}
+	}
+
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camTarget);
+  	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camZoom);
+
+	var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" + camTarget.lat.toString() + "," + camTarget.lng.toString() + "&zoom=" + camZoom.toString() + "&size=100x100&key=AIzaSyDUl_1pB8VULv0KmItP_FuzmE4Y6qy0VeQ";
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
   }
+
+  
 
   	//Parse map data to generate a list of buttons to create	
 	generateButtonList(){
@@ -357,6 +417,26 @@ class App extends Component {
   		}
 	}
 
+	//Set global cam variables before loading the map.
+	var db = firebase.database();
+    var camRef = db.ref('users/' + userID + '/maps/' + mapID + '/camZoom/');
+    routeRef.orderByChild("camZoom").on("child_added", function (snapshot) {
+        camZoom=snapshot.val(); 
+      });
+
+	var camRef = db.ref('users/' + userID + '/maps/' + mapID + '/camTarget/');
+    routeRef.orderByChild("camTarget").on("child_added", function (snapshot) {
+        camTarget=snapshot.val(); 
+      });
+
+	if (!camZoom){
+		camZoom = 8;
+	}
+
+	if (!camTarget){
+		camTarget = {lat: -34.397, lng: 150.644}
+	}
+
 	//Draw the map
 	this.initMap();
 
@@ -385,9 +465,8 @@ class App extends Component {
             Okay, let's start
                </button>
         </div>
-		<img src={addIcon} className="App-add" alt="addIcon" />	
-		<img src={addMapIcon} className="App-add-map" alt="addIcon" />	
-		<img src={addRouteIcon} className="App-add-route" alt="addIcon" />	
+		<input type="image" onClick={this.showDrawUI} src={addIcon} className="App-add" alt="addIcon"/>
+		<input type="image" onClick={this.mapMode} src={addMapIcon} className="App-add-map" id="App-add-map" alt="addMapIcon" />	
         <button hidden onClick={this.test.bind(this)} className="load-button">
             TEST
           </button>
@@ -509,6 +588,10 @@ class App extends Component {
     mapDetails.hidden = true;
 	var profileDetails = document.getElementById('profile-details');
     profileDetails.hidden = true;
+	var addRoute = document.getElementById('App-add-route');
+  	//addRoute.hidden = true;
+	var addMap = document.getElementById('App-add-map');
+  	addMap.hidden = true;
   }
 
   /**
@@ -517,19 +600,19 @@ class App extends Component {
        * This constructor takes the control DIV as an argument.
        * @constructor
        */
-      /*CenterControl = function(controlDiv, map) {
+      SetRouteMode = function(ControlDiv, drawingManager) {
 
         // Set CSS for the control border.
-        var controlUI = document.createElement('div');
-        controlUI.style.backgroundColor = '#fff';
-        controlUI.style.border = '2px solid #fff';
-        controlUI.style.borderRadius = '3px';
-        controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
-        controlUI.style.cursor = 'pointer';
-        controlUI.style.marginBottom = '22px';
-        controlUI.style.textAlign = 'center';
-        controlUI.title = 'Click to recenter the map';
-        controlDiv.appendChild(controlUI);
+        var ControlUI = document.createElement('div');
+        ControlUI.style.backgroundColor = '#fff';
+        ControlUI.style.border = '2px solid #fff';
+        ControlUI.style.borderRadius = '3px';
+        ControlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+        ControlUI.style.cursor = 'pointer';
+        ControlUI.style.marginBottom = '22px';
+        ControlUI.style.textAlign = 'center';
+        ControlUI.title = 'Click to recenter the map';
+        ControlDiv.appendChild(ControlUI);
 
         // Set CSS for the control interior.
         var controlText = document.createElement('div');
@@ -540,27 +623,22 @@ class App extends Component {
         controlText.style.paddingLeft = '5px';
         controlText.style.paddingRight = '5px';
         controlText.innerHTML = 'Center Map';
-        controlUI.appendChild(controlText);
+        ControlUI.appendChild(controlText);
 
         // Setup the click event listeners: simply set the map to Chicago.
-        controlUI.addEventListener('click', function() {
-          drawingMode = google.maps.drawing.OverlayType.POLYLINE;
+        ControlUI.addEventListener('click', function() {
+          drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
         });
 
-	  }*/
+	  }
 
   //Plot map pins and routes
   initMap = function () {
      var map = new google.maps.Map(document.getElementById('map'), {
-       center: {lat: -34.397, lng: 150.644},
-       zoom: 8
+       center: camTarget,//{lat: -34.397, lng: 150.644},
+       zoom: camZoom//8
      });
 
-	 /*var centerControlDiv = document.createElement('div');
-     var centerControl = new CenterControl(centerControlDiv, map);
-
-     centerControlDiv.index = 1;
-     map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);*/
  
     var drawingManager = new google.maps.drawing.DrawingManager({
        drawingMode: google.maps.drawing.OverlayType.MARKER,
@@ -583,6 +661,393 @@ class App extends Component {
 
 	//Load a google map
 	drawingManager.setMap(map);
+
+	//Create button control for adding routes
+	var routeModeDiv = document.createElement('div');
+	var routeControlDiv = routeModeDiv;
+	var routeControlUI = document.createElement('div');	
+	routeControlUI.id = "App-add-route";	
+	routeControlUI.className = "App-add-route";
+	routeControlUI.style.width = '75px';
+	routeControlUI.style.height = '75px';
+	routeControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	routeControlUI.style.cursor = 'pointer';
+	routeControlUI.title = 'Click to recenter the map';
+	routeControlDiv.appendChild(routeControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	routeControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	routeControlUI.appendChild(controlText);
+
+	// Switch drawing type to polyline
+	routeControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+	var mapModeDiv = document.createElement('div');
+	var ControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var ControlUI = document.createElement('div');	
+	ControlUI.id = "App-add-route";	
+	ControlUI.className = "App-add-route";	
+	//ControlUI.style.visibility = "hidden";
+	ControlUI.style.width = '75px';
+	ControlUI.style.height = '75px';
+	ControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	ControlUI.style.cursor = 'pointer';
+	ControlUI.title = 'Click to recenter the map';
+	ControlDiv.appendChild(ControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	ControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	ControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	ControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+	 var mapModeDiv = document.createElement('div');
+	var subaddControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var subaddControlUI = document.createElement('div');	
+	subaddControlUI.id = "App-add-route";	
+	subaddControlUI.className = "App-add-route";	
+	//subaddControlUI.style.visibility = "hidden";
+	subaddControlUI.style.width = '75px';
+	subaddControlUI.style.height = '75px';
+	subaddControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	subaddControlUI.style.cursor = 'pointer';
+	subaddControlUI.title = 'Click to recenter the map';
+	subaddControlDiv.appendChild(subaddControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	subaddControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	subaddControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	subaddControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+
+
+
+
+
+
+	 var mapModeDiv = document.createElement('div');
+	var addControlDiv = mapModeDiv;
+     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
+	 var addControlUI = document.createElement('div');	
+	addControlUI.id = "App-add-route";	
+	addControlUI.className = "App-add-route";	
+	//addControlUI.style.visibility = "hidden";
+	addControlUI.style.width = '75px';
+	addControlUI.style.height = '75px';
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	addControlUI.style.cursor = 'pointer';
+	addControlUI.title = 'Click to recenter the map';
+	addControlDiv.appendChild(addControlUI);
+
+	// Set CSS for the control interior.
+	var controlText = document.createElement('div');
+	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+	controlText.style.color = 'rgb(25,25,25)';
+	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontSize = '16px';
+	controlText.style.lineHeight = '38px';
+	controlText.style.paddingLeft = '5px';
+	controlText.style.paddingRight = '5px';
+	controlText.innerHTML = '      ';
+	addControlUI.appendChild(controlText);
+
+	// Setup the click event listeners: simply set the map to Chicago.
+	addControlUI.addEventListener('click', function() {
+		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	});
+	
+
+     routeModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
 
 	//Draw routes
     var flightPlanCoordinates = [];
@@ -627,6 +1092,10 @@ class App extends Component {
 	//When a user draws a route or plots a pin, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
        markers.push(marker);
+	   
+	   //Track camera position
+	   camZoom = map.getCameraPosition().zoom;
+	   camTarget = map.getCameraPosition().target;
 	   //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
 
 	   //To remove: markers[markers.length].setMap(null);
@@ -637,6 +1106,10 @@ class App extends Component {
 
     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
        lines.push(line);
+
+	   //Track camera position
+	   camZoom = map.getCameraPosition().zoom;
+	   camTarget = map.getCameraPosition().target;
     });
   }
 }
