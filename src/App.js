@@ -68,7 +68,13 @@ var camTarget;
 var publicMap;
 
 //The full path to a public map
-var mapRef;
+var mapRef = null;
+
+//A counter of likes
+var likeCount = 0;
+
+//A map's date created
+var dateCreated = "11/07/17";
 
 class App extends Component {
 	constructor() {
@@ -297,14 +303,22 @@ class App extends Component {
 	}
 
 	if (!camTarget){
+		console.log("fill")
 		camTarget = {lat: -34.397, lng: 150.644}
+		var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=-34.397,150.644&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
+	
+	} else {
+		var camTargetVal = {lat: camTarget.lat(), lng: camTarget.lng()}
+		var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" + camTarget.lat().toString() + "," + camTarget.lng().toString() + "&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
+	
 	}
 
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camTarget);
-  	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camZoom);
+	console.log(camTarget)
 
-	//var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" + camTarget.lat.toString() + "," + camTarget.lng.toString() + "&zoom=" + camZoom.toString() + "&size=100x100&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
-	//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camZoom);
+  	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
+
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
   }
 
   
@@ -595,11 +609,19 @@ class App extends Component {
               return (
                 <div className="box" key={index}>
                   <div>
-					<button onClick={() => this.getMapData(item)}>{item/*.title*/ /*src={this.getThumnail(item)}*/}
-						<span><img src={this.getThumnail(item)}></img></span>
-
+					{/*<input type="image" src={this.getThumnail(item)} onClick={() => this.getMapData(item)}>*/}
+					<button className = "map-button-list" onClick={() => this.getMapData(item)}>
+						<span className = "map-button-view">
+							<img className = "map-thumb" src={this.getThumnail(item)}></img>
+							<span className = "map-button-overlay">
+								<span className = "map-name-text">{item}</span>
+								<span className = "map-created-on">Created on {dateCreated}</span>
+								<span className = "map-likes">{likeCount}</span>
+								<img className = "map-favs" src={favsIcon}></img>
+							</span>	
+						</span>	      
 					</button>
-					<img src={this.getThumnail(item)}></img>
+					{/*</input>*/}
                   </div>
                 </div>
               )
@@ -661,19 +683,28 @@ class App extends Component {
     profileDetails.hidden = true;
 
 	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
-		console.log(window.location.href)
-		var shortUrlCode = window.location.href.substr(33);
+		publicMap = true;
+
+		//CHANGE FOR PROD
+		var shortUrlCode = window.location.href.substr(22/*33*/);
+		console.log("shortUrlCode"+shortUrlCode)
 		var db = firebase.database();
 		var ref = db.ref('publicMaps/' + shortUrlCode + "/ref");
       	ref.orderByChild("ref").on("child_added", function (snapshot) {
   			mapRef = snapshot.val();
+			  console.log("snap"+snapshot.val());
+			  //this.getMapData(snapshot.val());
 		}, function (errorObject) {
   			console.log(errorObject);
 		});
+		console.log("mapRef" + mapRef)
+		if (mapRef){
 
-		publicMap = true;
-
-		this.getMapData(mapRef);
+			
+			this.getMapData(mapRef);
+		}	
+		
+	
 	}
   }
 
@@ -870,243 +901,177 @@ class App extends Component {
     routeModeDiv.index = 1;
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
 
-/*
 	//Create delete Pin button
 	var delPinModeDiv = document.createElement('div');
 	var delPinControlDiv = delPinModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var delPinControlUI = document.createElement('div');	
-	delPinControlUI.id = "App-add-route";	
-	delPinControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
+	var delPinControlUI = document.createElement('div');	
+	delPinControlUI.id = "del-pin";	
+	delPinControlUI.className = "del-pin";	
+	delPinControlUI.style.visibility = "hidden";
 	delPinControlUI.style.width = '75px';
 	delPinControlUI.style.height = '75px';
-	delPinControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	delPinControlUI.style.cursor = 'pointer';
 	delPinControlUI.title = 'Click to recenter the map';
 	delPinControlDiv.appendChild(delPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	delPinControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
+	controlText.innerHTML = 'Undo';
 	delPinControlUI.appendChild(controlText);
 
-	// Setup the click event listeners: simply set the map to Chicago.
+	//Remove the most recently added pin.
 	delPinControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+		markers[markers.length-1].setMap(null);
+	  	markers.pop();
 	});
 	
-
      delPinModeDiv.index = 1;
      map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delPinModeDiv);
 
-
-
-
-
-
-	 var mapModeDiv = document.createElement('div');
-	var addControlDiv = mapModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var addControlUI = document.createElement('div');	
-	addControlUI.id = "App-add-route";	
-	addControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
-	addControlUI.style.width = '75px';
-	addControlUI.style.height = '75px';
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	addControlUI.style.cursor = 'pointer';
-	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
+	//Create delete all Pins button
+	var delAllPinModeDiv = document.createElement('div');
+	var delAllPinControlDiv = delAllPinModeDiv;
+	var delAllPinControlUI = document.createElement('div');	
+	delAllPinControlUI.id = "del-all-pins";	
+	delAllPinControlUI.className = "del-all-pins";	
+	delAllPinControlUI.style.visibility = "hidden";
+	delAllPinControlUI.style.width = '75px';
+	delAllPinControlUI.style.height = '75px';
+	delAllPinControlUI.style.cursor = 'pointer';
+	delAllPinControlUI.title = 'Click to recenter the map';
+	delAllPinControlDiv.appendChild(delAllPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
+	controlText.innerHTML = 'Clear Pins';
+	delAllPinControlUI.appendChild(controlText);
 
-	// Setup the click event listeners: simply set the map to Chicago.
-	addControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	//Remove all pins.
+	delAllPinControlUI.addEventListener('click', function() {
+
+		for (var i=0; i<markers.length; i++){
+			markers[markers.length].setMap(null);
+	  		markers.pop();
+		}
 	});
 	
+     delAllPinModeDiv.index = 1;
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllPinModeDiv);
 
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
-
-
-
-
-
-
-	 var mapModeDiv = document.createElement('div');
-	var addControlDiv = mapModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var addControlUI = document.createElement('div');	
-	addControlUI.id = "App-add-route";	
-	addControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
-	addControlUI.style.width = '75px';
-	addControlUI.style.height = '75px';
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	addControlUI.style.cursor = 'pointer';
-	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
+	//Create delete Route button
+	var delRouteModeDiv = document.createElement('div');
+	var delRouteControlDiv = delRouteModeDiv;
+	var delRouteControlUI = document.createElement('div');	
+	delRouteControlUI.id = "del-route";	
+	delRouteControlUI.className = "del-route";	
+	delRouteControlUI.style.visibility = "hidden";
+	delRouteControlUI.style.width = '75px';
+	delRouteControlUI.style.height = '75px';
+	delRouteControlUI.style.cursor = 'pointer';
+	delRouteControlUI.title = 'Click to recenter the map';
+	delRouteControlDiv.appendChild(delPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
+	controlText.innerHTML = 'Undo';
+	delRouteControlDiv.appendChild(controlText);
 
-	// Setup the click event listeners: simply set the map to Chicago.
-	addControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	//Remove the most recently added route.
+	delPinControlUI.addEventListener('click', function() {
+		lines[lines.length-1].setMap(null);
+	  	markers.pop();
 	});
 	
+    delRouteModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delRouteModeDiv);
 
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
-
-
-
-
-
-
-	 var mapModeDiv = document.createElement('div');
-	var addControlDiv = mapModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var addControlUI = document.createElement('div');	
-	addControlUI.id = "App-add-route";	
-	addControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
-	addControlUI.style.width = '75px';
-	addControlUI.style.height = '75px';
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	addControlUI.style.cursor = 'pointer';
-	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
+	//Create delete all Routes button
+	var delAllRouteModeDiv = document.createElement('div');
+	var delAllRouteControlDiv = delAllRouteModeDiv;
+	var delAllRouteControlUI = document.createElement('div');	
+	delAllRouteControlUI.id = "del-all-routes";	
+	delAllRouteControlUI.className = "del-all-routes";	
+	delAllRouteControlUI.style.visibility = "hidden";
+	delAllRouteControlUI.style.width = '75px';
+	delAllRouteControlUI.style.height = '75px';
+	delAllRouteControlUI.style.cursor = 'pointer';
+	delAllRouteControlUI.title = 'Click to recenter the map';
+	delAllRouteControlDiv.appendChild(delAllPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
+	controlText.innerHTML = 'Clear Pins';
+	delAllRouteControlUI.appendChild(controlText);
 
-	// Setup the click event listeners: simply set the map to Chicago.
-	addControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	//Remove all routes.
+	delAllRouteControlUI.addEventListener('click', function() {
+
+		for (var i=0; i<lines.length; i++){
+			lines[lines.length].setMap(null);
+	  		lines.pop();
+		}
 	});
 	
+    delAllRouteModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllRouteModeDiv);
 
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
-
-
-
-
-
-
-	 var mapModeDiv = document.createElement('div');
-	var addControlDiv = mapModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var addControlUI = document.createElement('div');	
-	addControlUI.id = "App-add-route";	
-	addControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
-	addControlUI.style.width = '75px';
-	addControlUI.style.height = '75px';
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	addControlUI.style.cursor = 'pointer';
-	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
+	//Create reverse Route button
+	var revRouteModeDiv = document.createElement('div');
+	var revRouteControlDiv = revRouteModeDiv;
+	var revRouteControlUI = document.createElement('div');	
+	revRouteControlUI.id = "rev-route";	
+	revRouteControlUI.className = "rev-route";	
+	revRouteControlUI.style.visibility = "hidden";
+	revRouteControlUI.style.width = '75px';
+	revRouteControlUI.style.height = '75px';
+	revRouteControlUI.style.cursor = 'pointer';
+	revRouteControlUI.title = 'Click to recenter the map';
+	revRouteControlDiv.appendChild(revRouteControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
+	controlText.innerHTML = 'Clear Pins';
+	revRouteControlUI.appendChild(controlText);
 
-	// Setup the click event listeners: simply set the map to Chicago.
-	addControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+	//Reverse route
+	delAllRouteControlUI.addEventListener('click', function() {
+
+		lines = lines.reverse();
 	});
 	
+    revRouteModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(revRouteModeDiv);
 
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
-
-
-
-
-
-
-	 var mapModeDiv = document.createElement('div');
-	var addControlDiv = mapModeDiv;
-     //var routeMode = new SetRouteMode(routeModeDiv, drawingManager);
-	 var addControlUI = document.createElement('div');	
-	addControlUI.id = "App-add-route";	
-	addControlUI.className = "App-add-route";	
-	//addControlUI.style.visibility = "hidden";
-	addControlUI.style.width = '75px';
-	addControlUI.style.height = '75px';
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	addControlUI.style.cursor = 'pointer';
-	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
-
-	// Set CSS for the control interior.
-	var controlText = document.createElement('div');
-	addControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
-	controlText.style.fontSize = '16px';
-	controlText.style.lineHeight = '38px';
-	controlText.style.paddingLeft = '5px';
-	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
-
-	// Setup the click event listeners: simply set the map to Chicago.
-	addControlUI.addEventListener('click', function() {
-		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
-	});
-	
-
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
-*/
 	//Draw routes
     var flightPlanCoordinates = [];
 
@@ -1154,8 +1119,8 @@ class App extends Component {
 	   var createMapsPanel = document.getElementById('popup-create-map-panel');
     createMapsPanel.hidden = false;
 	   //Track camera position
-	   camZoom = map.zoom;
-	   camTarget = map.center;
+	   camZoom = map.getZoom();
+	   camTarget = map.getCenter();
 	   //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
 
 	   //To remove: markers[markers.length].setMap(null);
@@ -1170,8 +1135,8 @@ class App extends Component {
 	   var createMapsPanel = document.getElementById('popup-create-map-panel');
     createMapsPanel.hidden = false;
 	   //Track camera position
-	   camZoom = map.zoom;
-	   camTarget = map.center;
+	   camZoom = map.getZoom();
+	   camTarget = map.getCenter();
     });
   }
 }
