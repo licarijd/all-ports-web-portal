@@ -201,7 +201,14 @@ class App extends Component {
 
   showMapUI() {
     var mapsPanel = document.getElementById('popup-maps-panel');
-    mapsPanel.hidden = false;
+
+	if (mapDisplayActive === false){
+		mapsPanel.hidden = false;
+		mapDisplayActive = true;
+	} else {
+		mapsPanel.hidden = true;
+		mapDisplayActive = false;
+	}
   }
 
   showMapDetails() {
@@ -209,10 +216,12 @@ class App extends Component {
   	mapDetails.hidden = false;
   }
 
-  setCreateMapUI() {
+  /*setCreateMapUI() {
     var createMapsPanel = document.getElementById('popup-create-map-panel');
-    createMapsPanel.hidden = true;
-  }
+    createMapsPanel.hidden = false;
+	var mapsPanel = document.getElementById('popup-maps-panel');
+    mapsPanel.hidden = true;
+  }*/
 
   setPinDeleteUI() {
     var introElement = document.getElementById('intro');
@@ -1114,14 +1123,16 @@ class App extends Component {
 
 	//When a user draws a route or plots a pin, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
-       markers.push(marker);
-	   //this.setCreateMapUI();
-	   var createMapsPanel = document.getElementById('popup-create-map-panel');
-    createMapsPanel.hidden = false;
-	   //Track camera position
-	   camZoom = map.getZoom();
-	   camTarget = map.getCenter();
-	   //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+        markers.push(marker);
+	    //this.setCreateMapUI();
+	    var createMapsPanel = document.getElementById('popup-create-map-panel');
+        createMapsPanel.hidden = false;
+		var mapsPanel = document.getElementById('popup-maps-panel');
+   		mapsPanel.hidden = true;
+	    //Track camera position
+	    camZoom = map.getZoom();
+	    camTarget = map.getCenter();
+	    //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
 
 	   //To remove: markers[markers.length].setMap(null);
 	  // markers.pop
@@ -1130,13 +1141,15 @@ class App extends Component {
     });
 
     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
-       lines.push(line);
-	   //this.setCreateMapUI();
-	   var createMapsPanel = document.getElementById('popup-create-map-panel');
-    createMapsPanel.hidden = false;
-	   //Track camera position
-	   camZoom = map.getZoom();
-	   camTarget = map.getCenter();
+        lines.push(line);
+	    //this.setCreateMapUI();
+	    var createMapsPanel = document.getElementById('popup-create-map-panel');
+        createMapsPanel.hidden = false;
+		var mapsPanel = document.getElementById('popup-maps-panel');
+   		mapsPanel.hidden = true;
+	    //Track camera position
+	    camZoom = map.getZoom();
+	    camTarget = map.getCenter();
     });
   }
 }

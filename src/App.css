@@ -324,9 +324,9 @@
 
 .popup-create-map-panel {
   position: fixed;
-  left:0%;
+  left:5%;
   right:70%;
-  top:0%;
+  top:9.4%;
   bottom:0%;
   z-index: 1;
   background-color: #ffffff;
