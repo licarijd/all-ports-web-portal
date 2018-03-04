@@ -25,6 +25,16 @@ const storage = firebase.storage().ref()
 var markers = [];
 var lines = [];
 
+//Store all data associated with a pin
+var markerNames = [];
+var markerDescriptions = [];
+var markerNotes = [];
+
+//Store all data associated with a route
+var routeNames = [];
+var routeDescriptions = [];
+var routeNotes = [];
+
 //Represents a retrieved snapshot of the number of pictures attached to a map
 var picCount = null;
 
@@ -1109,6 +1119,12 @@ class App extends Component {
         		});
 
         		flightPath.setMap(map);
+
+				flightPath.addListener('click', function() {
+          			map.setZoom(8);
+          			map.setCenter(marker.getPosition());
+        		});
+
         		flightPlanCoordinates = [];
 
             } else{
@@ -1127,6 +1143,12 @@ class App extends Component {
           position: window.currentMarkerObj[i],
           map: map,
           title: 'Hello World!'
+        });
+
+		//Add click listeners to markers to bring up info
+		marker.addListener('click', function() {
+          map.setZoom(8);
+          map.setCenter(marker.getPosition());
         });
       }
 
@@ -1167,16 +1189,6 @@ class App extends Component {
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
     });
-
-	marker.addListener('click', function() {
-          map.setZoom(8);
-          map.setCenter(marker.getPosition());
-        });
-
-	polyline.addListener('click', function() {
-          map.setZoom(8);
-          map.setCenter(marker.getPosition());
-        });
   }
 }
 
