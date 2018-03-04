@@ -190,6 +190,7 @@ class App extends Component {
         this.setState({
           user
         });
+		this.load();
       });
   }
 
@@ -551,6 +552,7 @@ class App extends Component {
             TEST
           </button>
         <div id="top-panel" className="top-panel">
+  		<input id="pac-input" class="controls" type="text" placeholder="Search"></input>
 		<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>
 		{this.state.user ?
               <button  className="save-map" onClick={this.save.bind(this)}>Save Map</button>
@@ -793,6 +795,8 @@ class App extends Component {
 		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
 		routeControlUI.style.backgroundImage =  "url(" + downAddRouteIcon + ")";
 		mapControlUI.style.backgroundImage =  "url(" + addMapIcon + ")";
+		delPinControlUI.style.visibility = "hidden";
+		delAllPinControlUI.style.visibility = "hidden";
 	});
 	
      routeModeDiv.index = 1;
@@ -829,6 +833,8 @@ class App extends Component {
 		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.MARKER);
 		mapControlUI.style.backgroundImage =  "url(" + downAddMapIcon + ")";
 		routeControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
+		delRouteControlUI.style.visibility = "hidden";
+		delAllRouteControlUI.style.visibility = "hidden";
 	});
 	
     mapModeDiv.index = 1;
@@ -876,8 +882,8 @@ class App extends Component {
 	var subModeDiv = document.createElement('div');
 	var subControlDiv = subModeDiv;
 	var subControlUI = document.createElement('div');	
-	subControlUI.id = "App-add-route";	
-	subControlUI.className = "App-add-arrow";	
+	subControlUI.id = "App-sub";	
+	subControlUI.className = "App-sub";	
 	subControlUI.style.visibility = "hidden";
 	subControlUI.style.width = '100px';
 	subControlUI.style.height = '100px';
@@ -907,8 +913,8 @@ class App extends Component {
 		subControlUI.style.visibility = "hidden";
 	});
 	
-    routeModeDiv.index = 1;
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+    subModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(subModeDiv);
 
 	//Create delete Pin button
 	var delPinModeDiv = document.createElement('div');
@@ -917,7 +923,7 @@ class App extends Component {
 	delPinControlUI.id = "del-pin";	
 	delPinControlUI.className = "del-pin";	
 	delPinControlUI.style.visibility = "hidden";
-	delPinControlUI.style.width = '75px';
+	delPinControlUI.style.width = '120px';
 	delPinControlUI.style.height = '75px';
 	delPinControlUI.style.cursor = 'pointer';
 	delPinControlUI.title = 'Click to recenter the map';
@@ -936,8 +942,10 @@ class App extends Component {
 
 	//Remove the most recently added pin.
 	delPinControlUI.addEventListener('click', function() {
-		markers[markers.length-1].setMap(null);
-	  	markers.pop();
+		if (markers.length>0){
+			markers[markers.length-1].setMap(null);
+			markers.pop();
+		}	
 	});
 	
      delPinModeDiv.index = 1;
@@ -950,7 +958,7 @@ class App extends Component {
 	delAllPinControlUI.id = "del-all-pins";	
 	delAllPinControlUI.className = "del-all-pins";	
 	delAllPinControlUI.style.visibility = "hidden";
-	delAllPinControlUI.style.width = '75px';
+	delAllPinControlUI.style.width = '120px';
 	delAllPinControlUI.style.height = '75px';
 	delAllPinControlUI.style.cursor = 'pointer';
 	delAllPinControlUI.title = 'Click to recenter the map';
@@ -971,9 +979,10 @@ class App extends Component {
 	delAllPinControlUI.addEventListener('click', function() {
 
 		for (var i=0; i<markers.length; i++){
-			markers[markers.length].setMap(null);
-	  		markers.pop();
+			markers[i].setMap(null);
 		}
+
+		markers = [];
 	});
 	
      delAllPinModeDiv.index = 1;
@@ -986,7 +995,7 @@ class App extends Component {
 	delRouteControlUI.id = "del-route";	
 	delRouteControlUI.className = "del-route";	
 	delRouteControlUI.style.visibility = "hidden";
-	delRouteControlUI.style.width = '75px';
+	delRouteControlUI.style.width = '120px';
 	delRouteControlUI.style.height = '75px';
 	delRouteControlUI.style.cursor = 'pointer';
 	delRouteControlUI.title = 'Click to recenter the map';
@@ -1004,9 +1013,12 @@ class App extends Component {
 	delRouteControlDiv.appendChild(controlText);
 
 	//Remove the most recently added route.
-	delPinControlUI.addEventListener('click', function() {
-		lines[lines.length-1].setMap(null);
-	  	markers.pop();
+	delRouteControlUI.addEventListener('click', function() {
+		if (lines.length>0){
+			lines[lines.length-1].setMap(null);
+		}
+
+		lines = [];
 	});
 	
     delRouteModeDiv.index = 1;
@@ -1019,7 +1031,7 @@ class App extends Component {
 	delAllRouteControlUI.id = "del-all-routes";	
 	delAllRouteControlUI.className = "del-all-routes";	
 	delAllRouteControlUI.style.visibility = "hidden";
-	delAllRouteControlUI.style.width = '75px';
+	delAllRouteControlUI.style.width = '120px';
 	delAllRouteControlUI.style.height = '75px';
 	delAllRouteControlUI.style.cursor = 'pointer';
 	delAllRouteControlUI.title = 'Click to recenter the map';
@@ -1040,7 +1052,7 @@ class App extends Component {
 	delAllRouteControlUI.addEventListener('click', function() {
 
 		for (var i=0; i<lines.length; i++){
-			lines[lines.length].setMap(null);
+			lines[i].setMap(null);
 	  		lines.pop();
 		}
 	});
@@ -1055,7 +1067,7 @@ class App extends Component {
 	revRouteControlUI.id = "rev-route";	
 	revRouteControlUI.className = "rev-route";	
 	revRouteControlUI.style.visibility = "hidden";
-	revRouteControlUI.style.width = '75px';
+	revRouteControlUI.style.width = '150px';
 	revRouteControlUI.style.height = '75px';
 	revRouteControlUI.style.cursor = 'pointer';
 	revRouteControlUI.title = 'Click to recenter the map';
@@ -1128,7 +1140,9 @@ class App extends Component {
 	    var createMapsPanel = document.getElementById('popup-create-map-panel');
         createMapsPanel.hidden = false;
 		var mapsPanel = document.getElementById('popup-maps-panel');
-   		mapsPanel.hidden = true;
+   		mapsPanel.hidden = true;	
+		delPinControlUI.style.visibility = "visible";
+		delAllPinControlUI.style.visibility = "visible";
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
@@ -1146,11 +1160,23 @@ class App extends Component {
 	    var createMapsPanel = document.getElementById('popup-create-map-panel');
         createMapsPanel.hidden = false;
 		var mapsPanel = document.getElementById('popup-maps-panel');
-   		mapsPanel.hidden = true;
+   		mapsPanel.hidden = true;	
+		delAllRouteControlUI.style.visibility = "visible";	
+		delRouteControlUI.style.visibility = "visible";
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
     });
+
+	marker.addListener('click', function() {
+          map.setZoom(8);
+          map.setCenter(marker.getPosition());
+        });
+
+	polyline.addListener('click', function() {
+          map.setZoom(8);
+          map.setCenter(marker.getPosition());
+        });
   }
 }
 
