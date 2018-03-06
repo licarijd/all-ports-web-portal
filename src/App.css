@@ -378,7 +378,7 @@
   background-color: #ffffff;
 }
 
-.popup-create-map-panel {
+.popup-create-pin-panel {
   position: fixed;
   left:5%;
   right:70%;
@@ -388,6 +388,29 @@
   background-color: #ffffff;
 }
 
+.popup-create-route-panel {
+  position: fixed;
+  left:5%;
+  right:70%;
+  top:9.4%;
+  bottom:0%;
+  z-index: 1;
+  background-color: #ffffff;
+}
+
+.save-pin {
+  position: fixed;
+  left:5%;
+  bottom:5%;
+  z-index: 2;
+}
+
+.save-route {
+  position: fixed;
+  left:5%;
+  bottom:5%;
+  z-index: 2;
+}
 
 .map-details {
   position: fixed;
