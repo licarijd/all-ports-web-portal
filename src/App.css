@@ -180,7 +180,7 @@
 .side-panel {
   position: fixed;
   left:0%;
-  right:95%;
+  right:94%;
   top:0%;
   bottom:0%;
   z-index: 1;
@@ -381,7 +381,7 @@
 .popup-create-pin-panel {
   position: fixed;
   left:5%;
-  right:70%;
+  right:63%;
   top:9.4%;
   bottom:0%;
   z-index: 1;
@@ -396,13 +396,6 @@
   bottom:0%;
   z-index: 1;
   background-color: #ffffff;
-}
-
-.save-pin {
-  position: fixed;
-  left:5%;
-  bottom:5%;
-  z-index: 2;
 }
 
 .save-route {
@@ -627,8 +620,8 @@
   background-color: #FFB74E;
   position: fixed;
   z-index: 1;
-  left: 85%;
-  top: 15%;
+  left: 80.5%;
+  top: 12%;
 }
 
 .del-pin {
@@ -638,19 +631,19 @@
   background-color: #FFB74E;
   position: fixed;
   z-index: 1;
-  left: 85%;
-  top: 15%;
+  left: 90%;
+  top: 12%;
 }
 
 .del-all-routes {
   height: 40px;
-  width: 120px;
+  width: 140px;
   border-radius: 5px;
   background-color: #FFB74E;
   position: fixed;
   z-index: 1;
-  left: 75%;
-  top: 15%;
+  left: 86%;
+  top: 12%;
 }
 
 .del-all-pins {
@@ -660,8 +653,8 @@
   background-color: #FFB74E;
   position: fixed;
   z-index: 1;
-  left: 75%;
-  top: 15%;
+  left: 82%;
+  top: 12%;
 }
 
 .rev-route {
@@ -671,118 +664,382 @@
   background-color: #FFB74E;
   position: fixed;
   z-index: 1;
-  left: 65%;
-  top: 15%;
+  left: 72.5%;
+  top: 12%;
 }
 
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        position: fixed;
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      #description {
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-      }
+/* Always set the map height explicitly to define the size of the div
+  * element that contains the map. */
+#map {
+  position: fixed;
+  height: 100%;
+}
+/* Optional: Makes the sample page fill the window. */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+#description {
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 300;
+}
 
-      #infowindow-content .title {
-        font-weight: bold;
-      }
+#infowindow-content .title {
+  font-weight: bold;
+}
 
-      #infowindow-content {
-        display: none;
-      }
+#infowindow-content {
+  display: none;
+}
 
-      #map #infowindow-content {
-        display: inline;
-      }
+#map #infowindow-content {
+  display: inline;
+}
 
-      .pac-card {
-        margin: 10px 10px 0 0;
-        border-radius: 2px 0 0 2px;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        outline: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        background-color: #fff;
-        font-family: Roboto;
-      }
+.pac-card {
+  margin: 10px 10px 0 0;
+  border-radius: 2px 0 0 2px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background-color: #fff;
+  font-family: Roboto;
+}
 
-      #pac-container {
-        padding-bottom: 12px;
-        margin-right: 12px;
-      }
+#pac-container {
+  padding-bottom: 12px;
+  margin-right: 12px;
+}
 
-      .pac-controls {
-        display: inline-block;
-        padding: 5px 11px;
-      }
+.pac-controls {
+  display: inline-block;
+  padding: 5px 11px;
+}
 
-      .pac-controls label {
-        font-family: Roboto;
-        font-size: 13px;
-        font-weight: 300;
-      }
+.pac-controls label {
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 300;
+}
 
-      #pac-input {
-        position: fixed;
-        top: 2%;
-        left:36%;
-        right:45%;
-        width: 250px;
-        height: 40px;
-        border-radius: 5px;
-        background-color: #ffffff;
-        font-family: Roboto;
-        font-size: 15px;
-        font-weight: 300;
-        margin-left: 12px;
-        padding: 0 11px 0 13px;
-        text-overflow: ellipsis;
-        width: 400px;
-        z-index: 1;
+#pac-input {
+  position: fixed;
+  top: 2%;
+  left:36%;
+  right:45%;
+  width: 250px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #ffffff;
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 300;
+  margin-left: 12px;
+  padding: 0 11px 0 13px;
+  text-overflow: ellipsis;
+  width: 400px;
+  z-index: 1;
 
-        font-family: Avenir;
-        font-size: 16px;
-        font-weight: normal;
-        font-style: normal;
-        font-stretch: normal;
-        line-height: normal;
-        letter-spacing: normal;
-        text-align: left;
-        color: #2d2d2d;
-      }
+  font-family: Avenir;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: #2d2d2d;
+}
 
-      .searchicon {
-        width: 16px;
-        height: 16px;
-        object-fit: contain;
-      }
+.searchicon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
 
-      #pac-input:focus {
-        border-color: #4d90fe;
-      }
+#pac-input:focus {
+  border-color: #4d90fe;
+}
 
-      #title {
-        color: #fff;
-        background-color: #4d90fe;
-        font-size: 25px;
-        font-weight: 500;
-        padding: 6px 12px;
-      }
-      #target {
-        width: 345px;
-      }
+#title {
+  color: #fff;
+  background-color: #4d90fe;
+  font-size: 25px;
+  font-weight: 500;
+  padding: 6px 12px;
+}
+#target {
+  width: 345px;
+}
 
+.place {
+  position: fixed;
+  top: 14%;
+  left:9%;
+  z-index: 2;
+  height: 19px;
+  width: 35px;
+  color: #2D2D2D;
+  font-family: Avenir;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 19px;
+}
 
+.place-input {
+  position: fixed;
+  top: 19%;
+  left:9%;
+  z-index: 2;
+	height: 50px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+  padding-left: 10px;
+}
+
+.description {
+  position: fixed;
+  top: 27%;
+  left:9%;
+	height: 19px;
+	width: 76px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+}
+
+.description-input {
+  position: fixed;
+  top: 32%;
+  left:9%;
+	height: 100px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+  padding-left: 10px;
+  word-wrap: break-word;
+}
+.notes {
+  position: fixed;
+  top: 47%;
+  left:8%;
+	height: 19px;
+	width: 41px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+  padding-left: 10px;
+}
+
+.notes-input {
+  position: fixed;
+  top: 52%;
+  left:9%;
+	height: 100px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+  padding-left: 10px;
+}
+
+.photos {
+  position: fixed;
+  top: 68%;
+  left:9%;
+	height: 19px;
+	width: 47px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+}
+
+.photos-input {
+  position: fixed;
+  top: 71%;
+  left:9%;
+	height: 100px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+  padding-left: 10px;
+}
+
+.addphotoicon {
+  position: fixed;
+  bottom: 19.5%;
+  left:17.5%;
+	height: 40px;
+	width: 40px;
+}
+
+.favs-icon-2 {
+  position: fixed;
+  top: 11%;
+  left:31.5%;
+	height: 40px;
+	width: 40px;
+}
+
+.delete-pin {
+	position: fixed;
+  left:23%;
+  bottom:3%;
+  z-index: 2;
+}
+
+.save-pin {
+  position: fixed;
+  left:9%;
+  bottom:3%;
+  z-index: 2;
+}
+
+.save-map-popup {
+  position: fixed; 
+  left:38%;
+  bottom:15%; 
+  z-index: 4;
+	height: 560px;
+	width: 400px;
+	border: 1px solid #BEBEBE;
+	border-radius: 5px;
+	background-color: #FFFFFF;
+	box-shadow: 0 0 8px 2px rgba(0,0,0,0.4);
+}
+
+.welcome-back-save {
+	height: 75px;
+	width: 320px;
+	color: rgba(75,75,75,0.87);
+	font-family: Avenir;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 25px;
+	text-align: center;
+}
+
+.name-this-map {
+	height: 19px;
+	width: 210px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+}
+
+.name-this-map-input {
+	height: 50px;
+	width: 320px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FFFFFF;
+}
+
+.name-this-map-input-text {
+	height: 22px;
+	width: 210px;
+	color: #BEBEBE;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+.tags {
+	height: 19px;
+	width: 210px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+}
+
+.tags-input {
+	height: 50px;
+	width: 320px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FFFFFF;
+}
+
+.add-button {
+	height: 50px;
+	width: 110px;
+	border-radius: 0 5px 5px 0;
+	background-color: #2883E2;
+}
+
+.tag-button {
+	height: 30px;
+	width: 80px;
+	border-radius: 5px;
+	background-color: #FFB74E;
+}
+
+.save-map-button {
+	height: 50px;
+	width: 320px;
+	border-radius: 5px;
+	background-color: #2883E2;
+}
+
+.save-map-button-text {
+	height: 25px;
+	width: 320px;
+	color: #FFFFFF;
+	font-family: Avenir;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 25px;
+	text-align: center;
+}
+
+.add-button-text {
+	height: 25px;
+	width: 110px;
+	color: #FFFFFF;
+	font-family: Avenir;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 25px;
+	text-align: center;
+}
+
+.cancel-save-map {
+	height: 22px;
+	width: 56px;
+	color: #606060;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+}
 
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }

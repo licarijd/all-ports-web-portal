@@ -6,6 +6,8 @@ import addArrow from './addarrow.png';
 import addIcon from './addicon.png';
 import subIcon from './subicon.png';
 import saveIcon from './saveicon.png';
+import deleteIcon from './deleteicon.png';
+import addPhotoIcon from './addphotoicon.png';
 import addMapIcon from './pinicon.png';
 import downAddMapIcon from './pinicondown.png';
 import addRouteIcon from './routeicon.png';
@@ -17,6 +19,7 @@ import settingsIcon from './menuicon.png';
 import mapsIcon from './mapicon.png';
 import collectionsIcon from './collectionsicon.png';
 import favsIcon from './favsicon.png';
+import favsIcon2 from './favsicon2.png';
 import './App.css';
 import FileUploader from 'react-firebase-file-uploader';
 
@@ -121,25 +124,25 @@ class App extends Component {
 			//A counter which increments as users upload pictures
       		currentPinPictures: 0,
 
-			mapNameField: 'Please enter your map name',
+			mapNameField: '',
 
       		//Map name input field
-      		pinNameField: 'Please enter a name for your pin',
+      		pinNameField: '',
 
 			//Map name input field
-      		pinDescriptionField: 'Please enter a description',
+      		pinDescriptionField: '',
 
 			//Map name input field
-      		pinNotesField: 'Notes',
+      		pinNotesField: '',
 
 			//Map name input field
-      		pinTagsField: 'Tags',
+      		pinTagsField: '',
 
 			//Map name input field
-      		routeNameField: 'Please enter your map name',
+      		routeNameField: '',
 
 			//Map name input field
-      		routeNotesField: 'Please enter your map name',
+      		routeNotesField: '',
 
 			//A list of all loaded images
       		loadedImage: []
@@ -313,7 +316,17 @@ class App extends Component {
   	mapDetails.hidden = false;
   }
 
- 
+  
+	activateSaveMapUI(){
+    	var introElement = document.getElementById('save-map-popup');
+    	introElement.hidden = false;
+	}
+
+	deactivateSaveMapUI(){
+    	var introElement = document.getElementById('save-map-popup');
+    	introElement.hidden = true;
+	}
+
 
   setPinDeleteUI() {
     var introElement = document.getElementById('intro');
@@ -419,6 +432,10 @@ class App extends Component {
 
 
   save() {
+	
+	if (!this.state.user){
+		this.login();
+	}
 
     var lineData;
     var pinData;
@@ -774,6 +791,18 @@ if(markerNameDataString){
   render() {
     return (
       <div id="interctable" >
+		<div id = "save-map-popup" className = "save-map-popup">
+			<h2 id = "welcome-back-save" className = "welcome-back-save">Welcome back!
+			You can now finalize details and save your map to your account</h2>
+			<h2 id = "welcome-back-save" className = "welcome-back-save">Name This Map</h2>
+			<input className = "name-this-map-input"
+            type="text"
+            value={this.state.mapNameField}
+            onChange={this.handleChange}
+          />
+			<button id="save-map-button" className="save-map-button" onClick={this.save.bind(this)}>Save Map</button>
+			<button id="cancel-save-map" className="cancel-save-map" onClick={this.deactivateSaveMapUI}>cancel</button>
+		</div>
         <div id="intro">
 		<div className="Rectangle-3"></div>
 		  <img src={addArrow} className="App-add-arrow" alt="addArrow" />
@@ -795,12 +824,12 @@ if(markerNameDataString){
             TEST
           </button>
         <div id="top-panel" className="top-panel">
-  		<input id="pac-input" class="controls" type="text" placeholder="Search"></input>
+  		<input id="pac-input" className="controls" type="text" placeholder="Search"></input>
 		<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>
 		{this.state.user ?
               <button  className="save-map" onClick={this.save.bind(this)}>Save Map</button>
               :
-              <button  className="save-map" onClick={this.login}>Sign In</button>
+              <button  className="save-map" onClick={this.login}>Save Map</button>
             }
 			{this.state.user ?
               <button onClick={this.logout}>Log Out</button>
@@ -823,41 +852,36 @@ if(markerNameDataString){
           />
           </div>
 		  <div className = "popup-create-pin-panel"  id="popup-create-pin-panel">
-			<input
-            type="text"
-            value={this.state.mapNameField}
-            onChange={this.handleChange}
-          />
-			<input
+		  <img src = {favsIcon2} className = "favs-icon-2"/>
+		  <h2 className = "place">Place</h2>
+			<input className = "place-input"
             type="text"
             value={this.state.pinNameField}
             onChange={this.handleChangePinName}
           />
-		    <input
+		  	<h2 className = "description">Description</h2>
+		    <input className = "description-input"
             type="text"
             value={this.state.pinDescriptionField}
             onChange={this.handleChangePinDescription}
           />
-		  <input
+		  <h2 className = "notes">Notes</h2>
+		  <input className = "notes-input"
             type="text"
             value={this.state.pinNotesField}
             onChange={this.handleChangePinNotes}
           />
-		  <input
-            type="text"
-            value={this.state.pinTagsField}
-            onChange={this.handleChangePinTags}
-          />
+		  <div className = "photos-input">
 			<form>
-            <label>photos:</label>
+            <label className = "photos">Photos</label>
             {this.state.isUploading &&
               <p>Progress: {this.state.progress}</p>
             }
             {this.state.avatarURL &&
               <img src={this.state.avatarURL} />
             }
-            <label style={{backgroundColor: 'steelblue', color: 'white', padding: 10, borderRadius: 4, pointer: 'cursor'}}>
-              +
+            <label>
+              <img src={addPhotoIcon} className = "addphotoicon" />
                     <FileUploader
                       hidden
                       accept="image/*"
@@ -871,7 +895,9 @@ if(markerNameDataString){
                     />
               </label>
           </form>
-		  <input type="image" src={saveIcon} className="save-pin" onClick={this.savePin.bind(this)}></input>
+		  </div>
+		  <input type="image" src={saveIcon} className="save-pin" onClick={this.state.mapNameField!="" ? this.savePin.bind(this) : this.activateSaveMapUI}></input>
+		  <input type="image" src={deleteIcon} className="delete-pin"></input>
           </div>
         </div>
         <div id="side-panel" className="side-panel">
@@ -965,6 +991,8 @@ if(markerNameDataString){
     mapDetails.hidden = true;
 	var profileDetails = document.getElementById('profile-details');
     profileDetails.hidden = true;
+	var introElement = document.getElementById('save-map-popup');
+    introElement.hidden = true;
 
 	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
 		publicMap = true;
@@ -1055,7 +1083,7 @@ if(markerNameDataString){
 	var controlText = document.createElement('div');
 	routeControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
@@ -1070,6 +1098,9 @@ if(markerNameDataString){
 		mapControlUI.style.backgroundImage =  "url(" + addMapIcon + ")";
 		delPinControlUI.style.visibility = "hidden";
 		delAllPinControlUI.style.visibility = "hidden";
+		delAllRouteControlUI.style.visibility = "visible";	
+		delRouteControlUI.style.visibility = "visible";
+		revRouteControlUI.style.visibility = "visible";
 	});
 	
      routeModeDiv.index = 1;
@@ -1093,7 +1124,7 @@ if(markerNameDataString){
 	var controlText = document.createElement('div');
 	mapControlUI.style.backgroundImage =  "url(" + addMapIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
@@ -1108,6 +1139,9 @@ if(markerNameDataString){
 		routeControlUI.style.backgroundImage =  "url(" + addRouteIcon + ")";
 		delRouteControlUI.style.visibility = "hidden";
 		delAllRouteControlUI.style.visibility = "hidden";
+		revRouteControlUI.style.visibility = "hidden";
+		delPinControlUI.style.visibility = "visible";
+		delAllPinControlUI.style.visibility = "visible";
 	});
 	
     mapModeDiv.index = 1;
@@ -1130,7 +1164,7 @@ if(markerNameDataString){
 	var controlText = document.createElement('div');
 	addControlUI.style.backgroundImage =  "url(" + addIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
@@ -1169,7 +1203,7 @@ if(markerNameDataString){
 	var controlText = document.createElement('div');
 	subControlUI.style.backgroundImage =  "url(" + subIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
@@ -1196,16 +1230,17 @@ if(markerNameDataString){
 	delPinControlUI.id = "del-pin";	
 	delPinControlUI.className = "del-pin";	
 	delPinControlUI.style.visibility = "hidden";
-	delPinControlUI.style.width = '120px';
-	delPinControlUI.style.height = '75px';
+	delPinControlUI.style.width = '80px';
+	delPinControlUI.style.height = '40px';
+	delPinControlUI.style.borderRadius = '5px';
 	delPinControlUI.style.cursor = 'pointer';
 	delPinControlUI.title = 'Click to recenter the map';
 	delPinControlDiv.appendChild(delPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.color = 'rgb(255,255,255)';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
@@ -1232,20 +1267,21 @@ if(markerNameDataString){
 	delAllPinControlUI.className = "del-all-pins";	
 	delAllPinControlUI.style.visibility = "hidden";
 	delAllPinControlUI.style.width = '120px';
-	delAllPinControlUI.style.height = '75px';
+	delAllPinControlUI.style.height = '40px';
+	delAllPinControlUI.style.borderRadius = '5px';
 	delAllPinControlUI.style.cursor = 'pointer';
 	delAllPinControlUI.title = 'Click to recenter the map';
 	delAllPinControlDiv.appendChild(delAllPinControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.color = 'rgb(255,255,255)';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = 'Clear Pins';
+	controlText.innerHTML = 'Clear All Pins';
 	delAllPinControlUI.appendChild(controlText);
 
 	//Remove all pins.
@@ -1268,30 +1304,30 @@ if(markerNameDataString){
 	delRouteControlUI.id = "del-route";	
 	delRouteControlUI.className = "del-route";	
 	delRouteControlUI.style.visibility = "hidden";
-	delRouteControlUI.style.width = '120px';
-	delRouteControlUI.style.height = '75px';
+	delRouteControlUI.style.width = '80px';
+	delRouteControlUI.style.height = '40px';
+	delRouteControlUI.style.borderRadius = '5px';
 	delRouteControlUI.style.cursor = 'pointer';
 	delRouteControlUI.title = 'Click to recenter the map';
-	delRouteControlDiv.appendChild(delPinControlUI);
+	delRouteControlDiv.appendChild(delRouteControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.color = 'rgb(255,255,255)';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
 	controlText.innerHTML = 'Undo';
-	delRouteControlDiv.appendChild(controlText);
+	delRouteControlUI.appendChild(controlText);
 
 	//Remove the most recently added route.
 	delRouteControlUI.addEventListener('click', function() {
 		if (lines.length>0){
 			lines[lines.length-1].setMap(null);
-		}
-
-		lines = [];
+			lines.pop();
+		}	
 	});
 	
     delRouteModeDiv.index = 1;
@@ -1304,21 +1340,22 @@ if(markerNameDataString){
 	delAllRouteControlUI.id = "del-all-routes";	
 	delAllRouteControlUI.className = "del-all-routes";	
 	delAllRouteControlUI.style.visibility = "hidden";
-	delAllRouteControlUI.style.width = '120px';
-	delAllRouteControlUI.style.height = '75px';
+	delAllRouteControlUI.style.width = '140px';
+	delAllRouteControlUI.style.height = '40px';
+	delRouteControlUI.style.borderRadius = '5px';
 	delAllRouteControlUI.style.cursor = 'pointer';
 	delAllRouteControlUI.title = 'Click to recenter the map';
-	delAllRouteControlDiv.appendChild(delAllPinControlUI);
+	delAllRouteControlDiv.appendChild(delAllRouteControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.color = 'rgb(255,255,255)';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = 'Clear Pins';
+	controlText.innerHTML = 'Clear All Routes';
 	delAllRouteControlUI.appendChild(controlText);
 
 	//Remove all routes.
@@ -1326,8 +1363,9 @@ if(markerNameDataString){
 
 		for (var i=0; i<lines.length; i++){
 			lines[i].setMap(null);
-	  		lines.pop();
 		}
+
+		lines = [];
 	});
 	
     delAllRouteModeDiv.index = 1;
@@ -1340,21 +1378,22 @@ if(markerNameDataString){
 	revRouteControlUI.id = "rev-route";	
 	revRouteControlUI.className = "rev-route";	
 	revRouteControlUI.style.visibility = "hidden";
-	revRouteControlUI.style.width = '150px';
-	revRouteControlUI.style.height = '75px';
+	revRouteControlUI.style.width = '120px';
+	revRouteControlUI.style.height = '40px';
+	delRouteControlUI.style.borderRadius = '5px';
 	revRouteControlUI.style.cursor = 'pointer';
 	revRouteControlUI.title = 'Click to recenter the map';
 	revRouteControlDiv.appendChild(revRouteControlUI);
 
 	// Set CSS for the control interior.
 	var controlText = document.createElement('div');
-	controlText.style.color = 'rgb(25,25,25)';
-	controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+	controlText.style.color = 'rgb(255,255,255)';
+	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
 	controlText.style.lineHeight = '38px';
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
-	controlText.innerHTML = 'Clear Pins';
+	controlText.innerHTML = 'Reverse Route';
 	revRouteControlUI.appendChild(controlText);
 
 	//Reverse route
@@ -1448,6 +1487,7 @@ if(markerNameDataString){
    		mapsPanel.hidden = true;	
 		delAllRouteControlUI.style.visibility = "visible";	
 		delRouteControlUI.style.visibility = "visible";
+		revRouteControlUI.style.visibility = "visible";
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
