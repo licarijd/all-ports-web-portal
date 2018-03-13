@@ -515,6 +515,8 @@ class App extends Component {
 		saveWhenMapSet = false;
 		this.savePin();
 	}
+
+	this.deactivateSaveMapUI();
   }
 
   
@@ -637,7 +639,10 @@ class App extends Component {
 
   //Retrieve and parse all data from Firebase needed to construct a map's pins and routes
   getMapData(mapID){
-	this.showMapDetails(); 
+
+	this.showMapUI();
+
+	//this.showMapDetails(); 
     this.setState({ loadedImage: [] })
     this.setState({ mapNameField: mapID });
     mapName = mapID + "";
@@ -738,6 +743,10 @@ if(markerNameDataString){
         	var point = {lat:Number(markerDataCoordinate[0]), lng:Number(markerDataCoordinate[1])};
       		window.currentMarkerObj.push(point);
     	}
+
+		//Show pin info
+		var createPinPanel = document.getElementById('popup-create-pin-panel');
+        createPinPanel.hidden = false;
     }
 
 	if(routeDataString){
@@ -1003,7 +1012,7 @@ if(markerNameDataString){
 
 	//Deactivate components
 	var mapsList = document.getElementById('popup-maps-panel');
-    mapsList.hidden = true;
+    mapsList.hidden = true;	
 	var createPinPanel = document.getElementById('popup-create-pin-panel');
     createPinPanel.hidden = true;
 	var createRoutePanel = document.getElementById('popup-create-route-panel');
