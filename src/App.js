@@ -115,6 +115,12 @@ var pinNum;
 
 var currentPinNumber = 0;
 
+//Array of Google Maps objects created to plot every marker. Used for creating  unique listener for every pin.
+var markerPlotRefs = [];
+
+//If a user tries saving a marker or route before they have a map name, set this flag to true to indicate that it needs to be saved once the map is named.
+var saveWhenMapSet = false;
+
 class App extends Component {
 	constructor() {
     	super();
@@ -402,6 +408,8 @@ class App extends Component {
       	pinTagsData += markerT + "+";
     }*/
 
+	if (this.state.mapNameField!=""){
+		console.log("BAAAAD");
 	pinNum = markers.length-1;
 
 
@@ -427,6 +435,13 @@ class App extends Component {
 	markerDates.push(dateAdded);
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData" + "/" + pinNum.toString()).push(dateAdded);
 	//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
+	this.save();
+} else {
+		console.log("GOOD");
+		saveWhenMapSet = true;
+		this.activateSaveMapUI();
+	}
+	
 	
   }
 
@@ -454,6 +469,7 @@ class App extends Component {
     //Push all map data to Firebase, including a number to represent added pictures, excluding the image files
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/mapName").push(mapName);
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/author").push(userID);
+	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markers").remove();
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
     firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
@@ -494,6 +510,11 @@ class App extends Component {
   	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
 
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
+
+	if (saveWhenMapSet!=false){
+		saveWhenMapSet = false;
+		this.savePin();
+	}
   }
 
   
@@ -827,7 +848,7 @@ if(markerNameDataString){
   		<input id="pac-input" className="controls" type="text" placeholder="Search"></input>
 		<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>
 		{this.state.user ?
-              <button  className="save-map" onClick={this.save.bind(this)}>Save Map</button>
+              <button  className="save-map" onClick={this.activateSaveMapUI}>Save Map</button>
               :
               <button  className="save-map" onClick={this.login}>Save Map</button>
             }
@@ -896,7 +917,7 @@ if(markerNameDataString){
               </label>
           </form>
 		  </div>
-		  <input type="image" src={saveIcon} className="save-pin" onClick={this.state.mapNameField!="" ? this.savePin.bind(this) : this.activateSaveMapUI}></input>
+		  <input type="image" src={saveIcon} className="save-pin" onClick={this.savePin.bind(this)}></input>
 		  <input type="image" src={deleteIcon} className="delete-pin"></input>
           </div>
         </div>
@@ -1439,21 +1460,39 @@ if(markerNameDataString){
 
   	if(window.currentMarkerObj[0]){
 
-	//Draw markers
-    for (var i=0;i<window.currentMarkerObj.length-1;i++){
+	window.currentMarkerObj = window.currentMarkerObj.slice(0, window.currentMarkerObj.length/2 - 1);
+
+	//Draw markers (only works if marker like description and notes data is present)
+    for (var i=0;i<window.currentMarkerObj.length;i++){
+
+	console.log(window.currentMarkerObj);
+		
       var marker = new google.maps.Marker({
           position: window.currentMarkerObj[i],
           map: map,
-          title: 'Hello World!'
+          title: i.toString
         });
 
-		//Add click listeners to markers to bring up info
-		marker.addListener('click', function() {
-          map.setZoom(8);
-          map.setCenter(marker.getPosition());
+		//Create an object for referencing the current point
+		markerPlotRefs[i] = {"title": marker.toString(), "obj": marker, "ref": i};
+		
+		//Add click listeners to markers to bring up info and siplay data
+		markerPlotRefs[i].obj.addListener('click', function() {
+			
+		  //Find the reference number for the current marker
+		  for (var j=0;j<markerPlotRefs.length;j++){
+			  if (this === markerPlotRefs[j].obj){
+
+				console.log(markerPlotRefs[j].ref);
+			  }
+		  }
+		  
+		   
         });
+
+		
       }
-
+	  console.log(markerPlotRefs)
       window.currentMarkerObj = []; 
   	}
 
