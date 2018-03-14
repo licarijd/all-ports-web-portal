@@ -121,6 +121,9 @@ var markerPlotRefs = [];
 //If a user tries saving a marker or route before they have a map name, set this flag to true to indicate that it needs to be saved once the map is named.
 var saveWhenMapSet = false;
 
+//References the pin which the info in the pin panel corresponds to
+var currentPinRef = -1;
+
 class App extends Component {
 	constructor() {
     	super();
@@ -435,11 +438,17 @@ class App extends Component {
 
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNameData").remove();
 
+	if (currentPinRef>=0){
+		if (markerNameData[currentPinRef]){
+			markerNameData[currentPinRef] = this.state.pinNameField;
+		}
+	} 
+
 	for (var i = 0;i<markerNameData.length;i++){
 		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
 	}
 
-	if (this.state.pinNameField!=""){
+	if (this.state.pinNameField!="" && currentPinRef<0){
 		markerNameData.push(this.state.pinNameField);
 		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
 	}
@@ -514,7 +523,7 @@ class App extends Component {
 	markerDates.push(dateAdded);
 	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
 	//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
-	this.save();
+	//this.save();
 	
 	//Retrieve the data and plot it
 	this.load();
@@ -917,6 +926,9 @@ if(markerNameDataString){
   }
 
   setPinFormData(currentPinNumber){
+	  
+	  currentPinRef = currentPinNumber;
+
 	  this.setState({
 				pinNameField: markerNameData[currentPinNumber]
 				});
@@ -1694,6 +1706,7 @@ if(markerNameDataString){
 
 	//When a user draws a route or plots a pin, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
+		currentPinRef = -1;
 		if (markers.length > 0 && !markerNameData[markers.length-1] || markerNameData[markers.length-1] == ""){
 			
 			markers[markers.length - 1].setMap(null);
