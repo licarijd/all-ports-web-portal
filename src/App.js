@@ -25,6 +25,8 @@ import FileUploader from 'react-firebase-file-uploader';
 
 const storage = firebase.storage().ref()
 
+
+//The name of the currently loaded map
 var mapName = "";
 
 //Lists of all added markers and lines. Elements are added while drawing
@@ -32,7 +34,6 @@ var markers = [];
 var lines = [];
 
 //Store all data associated with a pin
-//var markerNames = [];
 var markerDescriptions = [];
 var markerNotes = [];
 var markerTags = [];
@@ -114,15 +115,24 @@ var routeDistanceData = [];
 var routeNoteData = [];
 
 var pinNum;
+var routeNum;
 
 //Array of Google Maps objects created to plot every marker. Used for creating  unique listener for every pin.
 var markerPlotRefs = [];
 
+var thisRef;
+
 //If a user tries saving a marker or route before they have a map name, set this flag to true to indicate that it needs to be saved once the map is named.
 var saveWhenMapSet = false;
 
-//References the pin which the info in the pin panel corresponds to
+//References the pin which the info in the pin panel corresponds to. -1 indicates that no pin is referenced
 var currentPinRef = -1;
+
+//Same for routes
+var currentRouteRef = -1;
+
+//Represents the distance of a route that has just been plotted
+var currentRouteDistance;
 
 class App extends Component {
 	constructor() {
@@ -133,31 +143,23 @@ class App extends Component {
 			//A counter which increments as users upload pictures
       		currentPinPictures: 0,
 
+			//User input fields
 			mapNameField: '',
-
-      		//Map name input field
       		pinNameField: '',
-
-			//Map name input field
       		pinDescriptionField: '',
-
-			//Map name input field
       		pinNotesField: '',
-
-			//Map name input field
       		pinTagsField: '',
-
-			//Map name input field
       		routeNameField: '',
-
-			//Map name input field
       		routeNotesField: '',
+			routeTagsField: '',
+			routeDistanceField: 0,
 
 			//A list of all loaded images
       		loadedImage: []
     }
 
 	this.savePin = this.savePin.bind(this);
+	this.saveRoute = this.saveRoute.bind(this);
 	this.save = this.save.bind(this);
     this.login = this.login.bind(this); 
     this.logout = this.logout.bind(this); 
@@ -186,17 +188,13 @@ class App extends Component {
 					console.log(snapshot.key)
 					console.log(mapNameSnapshots)
         	});
-
 		}
-
-		//console.log(mapNameSnapshots);
   }
 
-  //Update map name field with user input
+ //Update state variables based on user input 
  handleChange(event) {
     this.setState({ mapNameField: event.target.value });
     mapName = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangePinName(event) {
@@ -223,7 +221,6 @@ class App extends Component {
     console.log(event.target.value);
   }
 
-    //Update map name field with user input
   handleChangeRouteName(event) {
     this.setState({ routeNameField: event.target.value });
     routeName = event.target.value;
@@ -311,6 +308,7 @@ class App extends Component {
     introElement.hidden = true;
   }
 
+  //UI methods deal with activating/deactivating dom elements
   showMapUI() {
     var mapsPanel = document.getElementById('popup-maps-panel');
 
@@ -328,17 +326,15 @@ class App extends Component {
   	mapDetails.hidden = false;
   }
 
-  
-	activateSaveMapUI(){
-    	var introElement = document.getElementById('save-map-popup');
-    	introElement.hidden = false;
-	}
+  activateSaveMapUI(){
+	var introElement = document.getElementById('save-map-popup');
+	introElement.hidden = false;
+  }
 
-	deactivateSaveMapUI(){
-    	var introElement = document.getElementById('save-map-popup');
-    	introElement.hidden = true;
-	}
-
+  deactivateSaveMapUI(){
+	var introElement = document.getElementById('save-map-popup');
+	introElement.hidden = true;
+  }
 
   setPinDeleteUI() {
     var introElement = document.getElementById('intro');
@@ -360,6 +356,7 @@ class App extends Component {
     introElement.hidden = true;
   }
 
+  //Retrieve thumbnail image for a particular map from firebase.
   getThumnail = function(mapName){
 
 		//Represents the thumbnail of a map on a map button
@@ -376,6 +373,7 @@ class App extends Component {
 		return thumbnail;
   }
 
+  //Generate a code which can be used to construct a short URL that references a map. The ref is stored in a public database section.
   share(){
 	  var shortUrl = this.hashCode(userID+mapName);
 	  var publicRef = 'users/' + userID + '/maps/' + "/" + mapName;
@@ -383,252 +381,311 @@ class App extends Component {
   }
 
   hashCode = function(s){
-  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-}
+  	  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+  }
 
-  savePin(pinNum) {
-	console.log("names: " + markerNameData + "markers: " + markers)
-	//pinName = this.state.pinNameField;
-	//var event = new CustomEvent('newpin');
-	//window.google.dispatchEvent(event);
-
-    /*var pinNameData;
-	var pinDescriptionData;
-	var pinNotesData;
-	var pinTagsData;
-
-    //Add pins and routes to lists
-    for (var i = 0; i < markerNames.length; i++) {
-      	var markerN = markerNames[i].position;
-      	pinNameData += markerN + "+";
-    }
-
-    for (var i = 0; i < markerDescriptions.length; i++) {
-      	var markerD = markerDescriptions[i].position;
-      	pinDescriptionData += markerD + "+";
-    }
-
-	for (var i = 0; i < markerNotes.length; i++) {
-      	var markerN = markerNotes[i].position;
-      	pinNotesData += markerN + "+";
-    }
-
-	for (var i = 0; i < markerTags.length; i++) {
-      	var markerT = markerTags[i].position;
-      	pinTagsData += markerT + "+";
-    }*/
-
-	if (this.state.mapNameField!=""){
-		//if (this.state.pinNameField!=""){
-		console.log("BAAAAD");
-	pinNum = markers.length-1;
-
+  saveRoute(routeNum){
 	
-	
-    var pinData;
-	//markerNameData.push(this.state.pinNameField);
-	//if (this.state.pinNameField!=""){
+		//Save the map before saving route data associated with it
+		if (this.state.mapNameField!=""){
 
+			routeNum = lines.length-1;
+			var lineData;
 
+			for (var i = 0; i < lines.length; i++) {
+				var line = lines[i].getPath().getArray();
+				lineData += line + "+";
+			}
 
-	
+			//Clear the current state of the route data for the current map. By writing the current state of route data, we can handle deletion and updating.
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeNameData").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeDistanceData").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeNotesData").remove();
 
-	//}
+			//If a route is being referenced and the route already has data associated with it, update that data with the input fields.
+			if (currentRouteRef>=0){
+				if (routeNameData[currentRouteRef]){
+					routeNameData[currentRouteRef] = this.state.routeNameField;
+				}
 
+				if (routeDistanceData[currentRouteRef]){
+					routeDistanceData[currentRouteRef] = this.state.routeDistanceField;
+				}
 
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNameData").remove();
+				if (routeNoteData[currentRouteRef]){
+					routeNoteData[currentRouteRef] = this.state.routeNotesField;
+				}
+			} 
 
-	if (currentPinRef>=0){
-		if (markerNameData[currentPinRef]){
-			markerNameData[currentPinRef] = this.state.pinNameField;
-		}
-	} 
+			for (var i = 0;i<routeNameData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(routeNameData[i]);
+			}
 
-	for (var i = 0;i<markerNameData.length;i++){
-		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
-	}
+			for (var i = 0;i<routeDistanceData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(routeDistanceData[i]);
+			}
 
-	if (this.state.pinNameField!="" && currentPinRef<0){
-		markerNameData.push(this.state.pinNameField);
-		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
-	}
+			for (var i = 0;i<routeNoteData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(routeNoteData[i]);
+			}
 
-	//Add pins and routes to lists
-    for (var i = 0; i < markers.length; i++) {
-      	var marker = markers[i].position;
-		console.log(markerNameData[i])
-      	if (markerNameData[i]&&markerNameData[i]!=""){
-			pinData += marker + "+";
+			//If no route is being referenced, then it is a new route.
+			if (this.state.routeNameField!="" && currentRouteRef<0){
+				routeNameData.push(this.state.routeNameField);
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(this.state.routeNameField);
 
-		}
-    }
+				//Push description and notes data if they exist. If not, set a default message.
+				
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(this.state.routeDistance);
+				
 
-		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markers").remove();
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
+				if (this.state.routeNotesField!=""){
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(this.state.routeNotesField);
+				} else {
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push("Please enter notes");
+				}
+			}
 
-		 this.setState({
-				pinNameField: ""
+			//Add pins and routes to lists
+			/*for (var i = 0; i < lines.length; i++) {
+				var line = lines[i].position;
+				console.log(routeNameData[i])
+				if (routeNameData[i]&&routeNameData[i]!=""){
+					routeData += line + "+";
+
+				}
+			}*/
+
+			//Push the state of all current pins
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("lines").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
+
+			this.setState({
+				routeNameField: ""
 			});
 			this.setState({
-				pinDescriptionField: ""
+				routeDistanceField: ""
 			});
 			this.setState({
-				pinNotesField: ""
+				routeNotesField: ""
 			});
-	//}
+		
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeTagsData").push(this.state.routeTagsField);
+			/*var dateAdded = new Date();
+			var dd = dateAdded.getDate();
+			var mm = dateAdded.getMonth()+1; //January is 0!
 
+			var yyyy = dateAdded.getFullYear();
+			if(dd<10){
+				dd='0'+dd;
+			} 
+			if(mm<10){
+				mm='0'+mm;
+			} 
+			var dateAdded = dd+'/'+mm+'/'+yyyy;*/
 
-	
-	/*firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNameData").remove();
+			//markerDates.push(dateAdded);
+			//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
+			
+			//Retrieve the data and plot it
+			this.load();
+			this.generateButtonList();
+			this.getMapData(mapName);
+			var mapsPanel = document.getElementById('popup-maps-panel');
+			mapsPanel.hidden = true;
 
-	for (var i = 0;i<markerNameData.length;i++){
-		firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
-	}*/
-
-	
-    //Push all map data to Firebase, including a number to represent added pictures, excluding the image files
-	//if (this.state.pinNameField!=""){
-
-		//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
-
-		this.setState({
-				pinNameField: ""
-			});
-			this.setState({
-				pinDescriptionField: ""
-			});
-			this.setState({
-				pinNotesField: ""
-			});
-	//}
-	
-
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(this.state.pinDescriptionField);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(this.state.pinNotesField);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerTagsData").push(this.state.pinTagsField);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName  + "/markerPicData").child("pics").set({pics: this.state.currentPinPictures});
-	var dateAdded = new Date();
-	var dd = dateAdded.getDate();
-	var mm = dateAdded.getMonth()+1; //January is 0!
-
-	var yyyy = dateAdded.getFullYear();
-	if(dd<10){
-		dd='0'+dd;
-	} 
-	if(mm<10){
-		mm='0'+mm;
-	} 
-	var dateAdded = dd+'/'+mm+'/'+yyyy;
-
-	markerDates.push(dateAdded);
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
-	//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
-	//this.save();
-	
-	//Retrieve the data and plot it
-	this.load();
-	this.generateButtonList();
-
-	//GET CORRECT MAP
-	this.getMapData(mapName);
-	var mapsPanel = document.getElementById('popup-maps-panel');
-	mapsPanel.hidden = true;
-		//}
-} else {
-		console.log("GOOD");
+	//Prompt users to create a map if they haven't already
+	} else {
 		saveWhenMapSet = true;
 		this.activateSaveMapUI();
 	}
-	
-	
-	
   }
 
+  //Save the state of the current list of pins
+  savePin(pinNum) {
 
+		//Save the map before saving pin data associated with it
+		if (this.state.mapNameField!=""){
+
+			pinNum = markers.length-1;
+			var pinData;
+
+			//Clear the current state of the pin data for the current map. By writing the current state of pin data, we can handle deletion and updating.
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNameData").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerDescriptionData").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNotesData").remove();
+
+			//If a pin is being referenced and the pin already has data associated with it, update that data with the input fields.
+			if (currentPinRef>=0){
+				if (markerNameData[currentPinRef]){
+					markerNameData[currentPinRef] = this.state.pinNameField;
+				}
+
+				if (markerDescriptionData[currentPinRef]){
+					markerDescriptionData[currentPinRef] = this.state.pinDescriptionField;
+				}
+
+				if (markerNoteData[currentPinRef]){
+					markerNoteData[currentPinRef] = this.state.pinNotesField;
+				}
+			} 
+
+			for (var i = 0;i<markerNameData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
+			}
+
+			for (var i = 0;i<markerDescriptionData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(markerDescriptionData[i]);
+			}
+
+			for (var i = 0;i<markerNoteData.length;i++){
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(markerNoteData[i]);
+			}
+
+			//If no pin is being referenced, then it is a new pin.
+			if (this.state.pinNameField!="" && currentPinRef<0){
+				markerNameData.push(this.state.pinNameField);
+				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
+
+				//Push description and notes data if they exist. If not, set a default message.
+				if (this.state.pinDescriptionField!=""){
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(this.state.pinDescriptionField);
+				} else {
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push("Please enter a description");
+				}
+
+				if (this.state.pinNotesField!=""){
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(this.state.pinNotesField);
+				} else {
+					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push("Please enter notes");
+				}
+			}
+
+			//Add pins and routes to lists
+			for (var i = 0; i < markers.length; i++) {
+				var marker = markers[i].position;
+				console.log(markerNameData[i])
+				if (markerNameData[i]&&markerNameData[i]!=""){
+					pinData += marker + "+";
+
+				}
+			}
+
+			//Push the state of all current pins
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markers").remove();
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
+
+			this.setState({
+				pinNameField: ""
+			});
+			this.setState({
+				pinDescriptionField: ""
+			});
+			this.setState({
+				pinNotesField: ""
+			});
+		
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerTagsData").push(this.state.pinTagsField);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName  + "/markerPicData").child("pics").set({pics: this.state.currentPinPictures});
+			var dateAdded = new Date();
+			var dd = dateAdded.getDate();
+			var mm = dateAdded.getMonth()+1; //January is 0!
+
+			var yyyy = dateAdded.getFullYear();
+			if(dd<10){
+				dd='0'+dd;
+			} 
+			if(mm<10){
+				mm='0'+mm;
+			} 
+			var dateAdded = dd+'/'+mm+'/'+yyyy;
+
+			markerDates.push(dateAdded);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
+			
+			//Retrieve the data and plot it
+			this.load();
+			this.generateButtonList();
+			this.getMapData(mapName);
+			var mapsPanel = document.getElementById('popup-maps-panel');
+			mapsPanel.hidden = true;
+
+	//Prompt users to create a map if they haven't already
+	} else {
+		saveWhenMapSet = true;
+		this.activateSaveMapUI();
+	}
+  }
+
+  //Handle save data related to maps, exclusive of pins and routes
   save() {
 	  if (this.state.mapNameField!=""){
 	
-	if (!this.state.user){
-		this.login();
-	}
+			if (!this.state.user){
+				this.login();
+			}
 
-    var lineData;
+			//MOVE TO SAVE ROUTE
+			/*var lineData;
 
-    
+			for (var i = 0; i < lines.length; i++) {
+				var line = lines[i].getPath().getArray();
+				lineData += line + "+";
+			}*/
 
-    for (var i = 0; i < lines.length; i++) {
-      	var line = lines[i].getPath().getArray();
-      	lineData += line + "+";
-    }
+			//Push all map data to Firebase, including a number to represent added pictures, excluding the image files
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/mapName").push(mapName);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/author").push(userID);
+			//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
+			var dateAdded = new Date();
+			var dd = dateAdded.getDate();
+			var mm = dateAdded.getMonth()+1; //January is 0!
 
-    //Push all map data to Firebase, including a number to represent added pictures, excluding the image files
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/mapName").push(mapName);
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/author").push(userID);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
-    firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
-	var dateAdded = new Date();
-	var dd = dateAdded.getDate();
-	var mm = dateAdded.getMonth()+1; //January is 0!
+			var yyyy = dateAdded.getFullYear();
+			if(dd<10){
+				dd='0'+dd;
+			} 
+			if(mm<10){
+				mm='0'+mm;
+			} 
+			var dateAdded = dd+'/'+mm+'/'+yyyy;
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
+			
+			
+			if (!camZoom){
+				camZoom = 8;
+			}
 
-	var yyyy = dateAdded.getFullYear();
-	if(dd<10){
-		dd='0'+dd;
-	} 
-	if(mm<10){
-		mm='0'+mm;
-	} 
-	var dateAdded = dd+'/'+mm+'/'+yyyy;
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
-	
-	
-	if (!camZoom){
-		camZoom = 8;
-	}
+			if (!camTarget){
+				camTarget = {lat: -34.397, lng: 150.644}
+				var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=-34.397,150.644&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
+			
+			} else {
+				var camTargetVal = {lat: camTarget.lat(), lng: camTarget.lng()}
+				var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" + camTarget.lat().toString() + "," + camTarget.lng().toString() + "&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
+			
+			}
 
-	if (!camTarget){
-		console.log("fill")
-		camTarget = {lat: -34.397, lng: 150.644}
-		var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=-34.397,150.644&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
-	
-	} else {
-		var camTargetVal = {lat: camTarget.lat(), lng: camTarget.lng()}
-		var thumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" + camTarget.lat().toString() + "," + camTarget.lng().toString() + "&zoom=" + camZoom.toString() + "&size=385x200&key=AIzaSyB31IEUSYz_m5JLGt70rJs3ueCSx2dYv_0";
-	
-	}
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camZoom);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
+			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
 
-	console.log(camTarget)
-
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camZoom);
-  	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
-
-	firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
-
-	//if (saveWhenMapSet!=false){
-	//	saveWhenMapSet = false;
-	//	this.savePin();
-	//}
-
-	this.deactivateSaveMapUI();
+			this.deactivateSaveMapUI();
 	  }
   }
 
-  
-
-  	//Parse map data to generate a list of buttons to create	
-	generateButtonList(){
-		console.log("generate")
-		mapButtonList = mapNameSnapshots.split("|");
-		mapButtonList.shift();
-		console.log(mapButtonList)
-	}
+//Parse map data to generate a list of buttons to create	
+  generateButtonList(){
+	  mapButtonList = mapNameSnapshots.split("|");
+	  mapButtonList.shift();
+  }
 
   load() {
 	  	//Supports loadability
     	this.getImage('/images/pic000');
 
-		//markers = [];
-        
 		//Get the number of pictures attached to the current map from Firebase
     	var db = firebase.database();
 		var ref;
@@ -678,12 +735,11 @@ class App extends Component {
 
       	//Only generate the list of maps once
         this.createMapList();
-
-		//console.log(mapNameSnapshots)
     })
   }
 
     loadAllPinData(pinNum) {
+
 	  	//Supports loadability
     	this.getImage('/images/pic000');
         
@@ -719,6 +775,7 @@ class App extends Component {
 					this.getImage('/images/' + pMapName + '/pinData/' + pinNum + '/' +i);
 				}
 			}
+
 		} else { 
 			if(picCount){
 				for (var i =0;i<=picCount;i++){
@@ -727,8 +784,6 @@ class App extends Component {
 			}
 		}
   }
-
-  
 
   //Retrieve and parse all data from Firebase needed to construct a map's pins and routes
   getMapData(mapID){
@@ -750,13 +805,16 @@ class App extends Component {
 	var markerNoteDataString;
 	var markerTagDataString;
 
+	var routeNameDataString;
+	var routeDistanceDataString;
+	var routeNoteDataString;
+	var routeTagDataString;
+
     var db = firebase.database();
 	var routeRef;
 
-	console.log("mapdata")
 	//Use full path for loading public maps
 	if (publicMap) {
-		console.log("bad")
     	routeRef = db.ref(mapID + '/lines/');
 	} else {
 		routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/lines/');
@@ -774,10 +832,10 @@ class App extends Component {
 
     routeRef.orderByChild("markers").on("child_added", function (snapshot) {
         markerDataString+=snapshot.val(); 
-      });
+    });
 
-	  //Pin Names, Descriptions, and Notes
-	  if (publicMap) {
+	//Pin/route Names, Descriptions, and Notes
+	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerNameData/');
 	} else {
     	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerNameData/');	
@@ -785,9 +843,19 @@ class App extends Component {
 
     routeRef.orderByChild("name").on("child_added", function (snapshot) {
         markerNameDataString+=snapshot.val()+("+"); 
-      });
+    });
 
-	  if (publicMap) {
+	if (publicMap) {
+    	routeRef = db.ref(mapID + '/routeNameData/');
+	} else {
+    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeNameData/');	
+	}
+
+    routeRef.orderByChild("name").on("child_added", function (snapshot) {
+        routeNameDataString+=snapshot.val()+("+"); 
+    });
+
+	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerDescriptionData/');
 	} else {
     	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerDescriptionData/');	
@@ -795,9 +863,19 @@ class App extends Component {
 
     routeRef.orderByChild("desc").on("child_added", function (snapshot) {
         markerDescriptionDataString+=snapshot.val()+("+"); 
-      });
+    });
+	
+	if (publicMap) {
+    	routeRef = db.ref(mapID + '/routeDistanceData/');
+	} else {
+    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeDistanceData/');	
+	}
 
-	  if (publicMap) {
+    routeRef.orderByChild("desc").on("child_added", function (snapshot) {
+        routeDistanceDataString+=snapshot.val()+("+"); 
+    });
+
+	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerNotesData/');
 	} else {
     	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerNotesData/');	
@@ -805,16 +883,24 @@ class App extends Component {
 
     routeRef.orderByChild("notes").on("child_added", function (snapshot) {
         markerNoteDataString+=snapshot.val()+("+"); 
-      });
+    });
+
+	if (publicMap) {
+    	routeRef = db.ref(mapID + '/routeNotesData/');
+	} else {
+    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeNotesData/');	
+	}
+
+    routeRef.orderByChild("notes").on("child_added", function (snapshot) {
+        routeNoteDataString+=snapshot.val()+("+"); 
+    });
     
-if(markerNameDataString){
+	//If firebase data exists for a given ttribute, set global references to it and update the form with the first pin's info
+	if(markerNameDataString){
     	markerNameDataString = markerNameDataString.substr(9);
-		//markerNameData = markerNameDataString.split("+\"\"+");
     	markerNameData = markerNameDataString.split("+"); 
 		markerNameData.pop();
 
-		//console.log(markerNameData);
-		
 		//Show pin info for the first pin
 		var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = false;
@@ -843,7 +929,6 @@ if(markerNameDataString){
 		markerDataString = markerDataString.replace(" ", "");
     	var markerData = markerDataString;
     	markerData = markerDataString.split("+"); 
-		//markers = markerData;
     	for (var i=0;i<markerData.length;i++){
         	markerData[i] = markerData[i].replace("(", "");
         	markerData[i] = markerData[i].replace(")", "");
@@ -852,10 +937,7 @@ if(markerNameDataString){
         	var point = {lat:Number(markerDataCoordinate[0]), lng:Number(markerDataCoordinate[1])};
       		window.currentMarkerObj.push(point);
     	}
-		//markers = window.currentMarkerObj;
     }
-
-	
 
 	if(routeDataString){
 		routeDataString = routeDataString.substr(18);
@@ -914,10 +996,6 @@ if(markerNameDataString){
 		camRef = db.ref('users/' + userID + '/maps/' + mapID + '/camTarget/');
 	}
 
-    /*routeRef.orderByChild("camTarget").on("child_added", function (snapshot) {
-        camTarget=snapshot.val(); 
-      });*/
-
 	//Draw the map
 	this.initMap();
 
@@ -925,33 +1003,61 @@ if(markerNameDataString){
 	this.load();
   }
 
+  //Update the pin form and state variables
   setPinFormData(currentPinNumber){
-	  
 	  currentPinRef = currentPinNumber;
-
 	  this.setState({
-				pinNameField: markerNameData[currentPinNumber]
-				});
-				this.setState({
-				pinDescriptionField: markerDescriptionData[currentPinNumber]
-				});
-				this.setState({
-				pinNotesField: markerNoteData[currentPinNumber]
-				});
-
+			pinNameField: markerNameData[currentPinNumber]
+	  });
+	  this.setState({
+			pinDescriptionField: markerDescriptionData[currentPinNumber]
+	  });
+	  this.setState({
+			pinNotesField: markerNoteData[currentPinNumber]
+	  });
   }
 
-  clearFormData(currentPinNumber){
+    //Update the routeform and state variables
+  setRouteFormData(currentRouteNumber){
+	  currentRouteRef = currentRouteNumber;
 	  this.setState({
-				pinNameField: ""
-				});
-				this.setState({
-				pinDescriptionField: ""
-				});
-				this.setState({
-				pinNotesField: ""
-				});
+			routeNameField: routeNameData[currentRouteNumber]
+	  });
+	  this.setState({
+			routeDistanceField: routeDistanceData[currentRouteNumber]
+	  });
+	  this.setState({
+			routeNotesField: routeNoteData[currentRouteNumber]
+	  });
+  }
 
+  //Update the route state variable
+  setRouteDistance(){
+	  this.setState({
+			routeDistance: currentRouteDistance
+	  });
+  }
+
+  clearFormData(){
+	  this.setState({
+			pinNameField: ""
+	  });
+	  this.setState({
+			pinDescriptionField: ""
+	  });
+	  this.setState({
+			pinNotesField: ""
+	  });
+
+	  this.setState({
+			routeNameField: ""
+	  });
+	  this.setState({
+			routeDistance: 0
+	  });
+	  this.setState({
+			routeNotesField: ""
+	  });
   }
   
   //Render introduction overlay when web app starts
@@ -1007,64 +1113,71 @@ if(markerNameDataString){
           <div className = "profile-details"  id="profile-details">
           </div>
           <div className = "popup-create-route-panel"  id="popup-create-route-panel">
-			<input
-            type="text"
-            value={this.state.routeNameField}
-            onChange={this.handleChangeRouteName}
-          />
-		  <input
-            type="text"
-            value={this.state.routeNotesField}
-            onChange={this.handleChangeRouteTags}
-          />
+			<img src = {favsIcon2} className = "favs-icon-2"/>
+			<h2 className = "route">Place</h2>
+				<input className = "route-input"
+					type="text"
+					value={this.state.routeNameField}
+					onChange={this.handleChangeRouteName}
+				/>
+			<h2 className = "distance">Distance</h2>
+			<h2 className = "distance-data">{this.state.routeDistance}km</h2>
+			<h2 className = "notes-route">Notes</h2>
+				<input className = "notes-input-route"
+					type="text"
+					value={this.state.routeNotesField}
+					onChange={this.handleChangeRouteNotes}
+				/>
+			<input type="image" src={saveIcon} className="save-pin" onClick={this.saveRoute.bind(this)}></input>
+			<input type="image" src={deleteIcon} className="delete-pin"></input>
           </div>
 		  <div className = "popup-create-pin-panel"  id="popup-create-pin-panel">
-		  <img src = {favsIcon2} className = "favs-icon-2"/>
-		  <h2 className = "place">Place</h2>
-			<input className = "place-input"
-            type="text"
-            value={this.state.pinNameField}
-            onChange={this.handleChangePinName}
-          />
-		  	<h2 className = "description">Description</h2>
-		    <input className = "description-input"
-            type="text"
-            value={this.state.pinDescriptionField}
-            onChange={this.handleChangePinDescription}
-          />
-		  <h2 className = "notes">Notes</h2>
-		  <input className = "notes-input"
-            type="text"
-            value={this.state.pinNotesField}
-            onChange={this.handleChangePinNotes}
-          />
-		  <div className = "photos-input">
-			<form>
-            <label className = "photos">Photos</label>
-            {this.state.isUploading &&
-              <p>Progress: {this.state.progress}</p>
-            }
-            {this.state.avatarURL &&
-              <img src={this.state.avatarURL} />
-            }
-            <label>
-              <img src={addPhotoIcon} className = "addphotoicon" />
-                    <FileUploader
-                      hidden
-                      accept="image/*"
-                      name="avatar"
-                      filename={mapName + this.state.currentPinPictures}
-                      storageRef={firebase.storage().ref('images/'+ mapName + '/pinData/' + this.state.currentPinPictures)}
-                      onUploadStart={this.handleUploadStart}
-                      onUploadError={this.handleUploadError}
-                      onUploadSuccess={this.handleUploadSuccess}
-                      onProgress={this.handleProgress}
-                    />
-              </label>
-          </form>
-		  </div>
-		  <input type="image" src={saveIcon} className="save-pin" onClick={this.savePin.bind(this)}></input>
-		  <input type="image" src={deleteIcon} className="delete-pin"></input>
+			<img src = {favsIcon2} className = "favs-icon-2"/>
+			<h2 className = "place">Place</h2>
+				<input className = "place-input"
+					type="text"
+					value={this.state.pinNameField}
+					onChange={this.handleChangePinName}
+				/>
+			<h2 className = "description">Description</h2>
+				<input className = "description-input"
+					type="text"
+					value={this.state.pinDescriptionField}
+					onChange={this.handleChangePinDescription}
+				/>
+			<h2 className = "notes">Notes</h2>
+				<input className = "notes-input"
+					type="text"
+					value={this.state.pinNotesField}
+					onChange={this.handleChangePinNotes}
+				/>
+			<div className = "photos-input">
+				<form>
+					<label className = "photos">Photos</label>
+					{this.state.isUploading &&
+					<p>Progress: {this.state.progress}</p>
+					}
+					{this.state.avatarURL &&
+					<img src={this.state.avatarURL} />
+					}
+					<label>
+					<img src={addPhotoIcon} className = "addphotoicon" />
+							<FileUploader
+							hidden
+							accept="image/*"
+							name="avatar"
+							filename={mapName + this.state.currentPinPictures}
+							storageRef={firebase.storage().ref('images/'+ mapName + '/pinData/' + this.state.currentPinPictures)}
+							onUploadStart={this.handleUploadStart}
+							onUploadError={this.handleUploadError}
+							onUploadSuccess={this.handleUploadSuccess}
+							onProgress={this.handleProgress}
+							/>
+					</label>
+				</form>
+			</div>
+			<input type="image" src={saveIcon} className="save-pin" onClick={this.savePin.bind(this)}></input>
+			<input type="image" src={deleteIcon} className="delete-pin"></input>
           </div>
         </div>
         <div id="side-panel" className="side-panel">
@@ -1130,6 +1243,7 @@ if(markerNameDataString){
 
   //Check auth info
   componentDidMount() {
+	  thisRef = this;
     auth.onAuthStateChanged((user) => {
       	if (user) {
         	this.setState({ user });
@@ -1161,6 +1275,7 @@ if(markerNameDataString){
 	var introElement = document.getElementById('save-map-popup');
     introElement.hidden = true;
 
+	//Handle loading public maps.
 	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
 		publicMap = true;
 
@@ -1171,36 +1286,41 @@ if(markerNameDataString){
 		var ref = db.ref('publicMaps/' + shortUrlCode + "/ref");
       	ref.orderByChild("ref").on("child_added", function (snapshot) {
   			mapRef = snapshot.val();
-			  console.log("snap"+snapshot.val());
-			  //this.getMapData(snapshot.val());
 		}, function (errorObject) {
   			console.log(errorObject);
 		});
-		console.log("mapRef" + mapRef)
 		if (mapRef){
-
-			
 			this.getMapData(mapRef);
 		}	
-		
-	
 	}
   }
-
-
 
   //Plot map pins and routes
   //Attached to TEST button
   test(){
     console.log("TEST");
   }
-  initMap = function() {
-	  
-		//var createPinPanel = document.getElementById('popup-create-pin-panel');
-       // createPinPanel.hidden = true;
 
+  //Load the Google Map 
+  initMap = function() {
+
+	//Used for subsequent references to 'this' from when initmap was initialized when a polyline is drawn
+	
+	//thisRefInit.setPinFormData(0);
+	
+	//if(window.currentMarkerObj[0]!="taters"){
+	//var
+	 //thisRef.test();
+
+	//for (var i=0;i<2;i++){
+//thisRef.clearFormData();
+	//}
+	//
+	//}
+	
+
+	  //Every time a new map is loaded, maps is cleared and updated with the latest firebase data
 	  markers = [];
-	  //markerNames = [];
 
 	//Set default cam position values if none exist
 	if (!camZoom){
@@ -1219,7 +1339,7 @@ if(markerNameDataString){
        //zoom: camZoom//8
      });
 
- 
+	//Allow drawing on the map
     var drawingManager = new google.maps.drawing.DrawingManager({
        drawingMode: google.maps.drawing.OverlayType.NONE,
        drawingControl: false,
@@ -1395,6 +1515,10 @@ if(markerNameDataString){
 		routeControlUI.style.visibility = "hidden";
 		addControlUI.style.visibility = "visible";
 		subControlUI.style.visibility = "hidden";
+		var createPinPanel = document.getElementById('popup-create-pin-panel');
+        createPinPanel.hidden = true;
+		var createRoutePanel = document.getElementById('popup-create-route-panel');
+        createRoutePanel.hidden = true;
 	});
 	
     subModeDiv.index = 1;
@@ -1424,8 +1548,6 @@ if(markerNameDataString){
 	controlText.style.paddingRight = '5px';
 	controlText.innerHTML = 'Undo';
 	delPinControlUI.appendChild(controlText);
-
-	var thisRef = this;
 
 	//Remove the most recently added pin.
 	delPinControlUI.addEventListener('click', function() {
@@ -1520,9 +1642,19 @@ if(markerNameDataString){
 
 	//Remove the most recently added route.
 	delRouteControlUI.addEventListener('click', function() {
+
+		thisRef.clearFormData();
+
+		var createRoutePanel = document.getElementById('popup-create-route-panel');
+        createRoutePanel.hidden = true;
+
 		if (lines.length>0){
 			lines[lines.length-1].setMap(null);
 			lines.pop();
+		}
+
+		if (/*markers.length<markerNameData.length&&*/routeNameData.length>0){
+			routeNameData.pop();
 		}	
 	});
 	
@@ -1557,11 +1689,17 @@ if(markerNameDataString){
 	//Remove all routes.
 	delAllRouteControlUI.addEventListener('click', function() {
 
+		thisRef.clearFormData();
+
+		var createRoutePanel = document.getElementById('popup-create-route-panel');
+        createRoutePanel.hidden = true;
+
 		for (var i=0; i<lines.length; i++){
 			lines[i].setMap(null);
 		}
 
 		lines = [];
+		routeNameData = [];
 	});
 	
     delAllRouteModeDiv.index = 1;
@@ -1640,6 +1778,10 @@ if(markerNameDataString){
 		window.currentRouteObj = [];
   	}
 
+//if(window.currentMarkerObj[0]!="tt"){
+		 // thisRef.clearFormData();
+//}
+
   	if(window.currentMarkerObj[0]){
 		  console.log(window.currentMarkerObj);
 
@@ -1689,16 +1831,10 @@ if(markerNameDataString){
 				
 				//Call outer functions referencing outer 'this'
 				markerPlotRefs[j]._this.setPinFormData(j);
+				thisRef.setRouteDistance();
 			  }
 		  }
-
-		  
-		   
         });
-
-		
-
-		
       }
 	  console.log(markerPlotRefs)
       window.currentMarkerObj = []; 
@@ -1707,42 +1843,54 @@ if(markerNameDataString){
 	//When a user draws a route or plots a pin, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
 		currentPinRef = -1;
+		//If a user didn't name their pin, get rid of it
 		if (markers.length > 0 && !markerNameData[markers.length-1] || markerNameData[markers.length-1] == ""){
 			
 			markers[markers.length - 1].setMap(null);
 			markers.pop();
 		}
         markers.push(marker);
-		//markerNameData.push("");
-	    //this.setCreateMapUI();
 	    var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = false;
+		var createRoutePanel = document.getElementById('popup-create-route-panel');
+        createRoutePanel.hidden = true;
 		var mapsPanel = document.getElementById('popup-maps-panel');
    		mapsPanel.hidden = true;	
 		delPinControlUI.style.visibility = "visible";
 		delAllPinControlUI.style.visibility = "visible";
+
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
-	    //drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
-
-	   //To remove: markers[markers.length].setMap(null);
-	  // markers.pop
 
 	  //To remove all, loop this
     });
 
-	
     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
+		currentRouteRef = -1;
+		if (lines.length > 0 && !routeNameData[lines.length-1] || routeNameData[lines.length-1] == ""){
+			
+			lines[lines.length - 1].setMap(null);
+			lines.pop();
+		}
         lines.push(line);
+
+		//Get the route distance to one decimal place.
+		currentRouteDistance = Math.round(google.maps.geometry.spherical.computeLength(line.getPath()) * 10) / 10;
+
+		//if(window.currentMarkerObj[0]!="taters"){
+		thisRef.setRouteDistance();
+		//}
+		console.log(currentRouteDistance);
 
 		//Set start and finish
 		var tmp = lines[lines.length-1].getPath().getArray();
-		routeStarts[routeStarts.length-1] = tmp[0];
-		routeFinishes[routeFinishes.length-1] = tmp[tmp.length-1];
+		routeStarts.push(tmp[0]);
+		routeFinishes.push(tmp[tmp.length-1]);
 
-		//var lengthInMeters = google.maps.geometry.spherical.computeLength(line.getPath());
-	    //this.setCreateMapUI();
+		var createPinPanel = document.getElementById('popup-create-pin-panel');
+        createPinPanel.hidden = true;
+
 	    var createRoutePanel = document.getElementById('popup-create-route-panel');
         createRoutePanel.hidden = false;
 		var mapsPanel = document.getElementById('popup-maps-panel');
@@ -1750,18 +1898,13 @@ if(markerNameDataString){
 		delAllRouteControlUI.style.visibility = "visible";	
 		delRouteControlUI.style.visibility = "visible";
 		revRouteControlUI.style.visibility = "visible";
+
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
     });
-
-	
   }
-
-  
 }
-
-
 
 function loadJS(src) {
   var ref = window.document.getElementsByTagName("script")[0];

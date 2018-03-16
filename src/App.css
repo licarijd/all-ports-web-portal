@@ -391,7 +391,7 @@
 .popup-create-route-panel {
   position: fixed;
   left:5%;
-  right:70%;
+  right:63%;
   top:9.4%;
   bottom:0%;
   z-index: 1;
@@ -806,7 +806,51 @@ html, body {
   padding-left: 10px;
 }
 
+.route {
+  position: fixed;
+  top: 14%;
+  left:9%;
+  z-index: 2;
+  height: 19px;
+  width: 35px;
+  color: #2D2D2D;
+  font-family: Avenir;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 19px;
+}
+
+.route-input {
+  position: fixed;
+  top: 19%;
+  left:9%;
+  z-index: 2;
+	height: 50px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+  padding-left: 10px;
+}
+
 .description {
+  position: fixed;
+  top: 27%;
+  left:9%;
+	height: 19px;
+	width: 76px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+}
+
+.distance {
   position: fixed;
   top: 27%;
   left:9%;
@@ -835,6 +879,16 @@ html, body {
   padding-left: 10px;
   word-wrap: break-word;
 }
+
+.distance-data {
+  position: fixed;
+  top: 27.5%;
+  left:9%;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 32px;
+}
+
 .notes {
   position: fixed;
   top: 47%;
@@ -852,6 +906,36 @@ html, body {
 .notes-input {
   position: fixed;
   top: 52%;
+  left:9%;
+	height: 100px;
+	width: 300px;
+	border: 1px solid #D8D8D8;
+	border-radius: 5px;
+	background-color: #FDFDFD;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 16px;
+	line-height: 22px;
+  padding-left: 10px;
+}
+
+.notes-route {
+  position: fixed;
+  top: 37%;
+  left:8.5%;
+	height: 19px;
+	width: 41px;
+	color: #2D2D2D;
+	font-family: Avenir;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 19px;
+  padding-left: 10px;
+}
+
+.notes-input-route {
+  position: fixed;
+  top: 42%;
   left:9%;
 	height: 100px;
 	width: 300px;
