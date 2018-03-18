@@ -503,6 +503,9 @@ class App extends Component {
 
   //Save the state of the current list of pins
   savePin(pinNum) {
+	  	if(!this.state.user){
+			  this.login();
+		  }
 
 		//Save the map before saving pin data associated with it
 		if (this.state.mapNameField!=""){
@@ -534,11 +537,11 @@ class App extends Component {
 				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
 			}
 
-			for (var i = 0;i<markerDescriptionData.length;i++){
+			for (var i = 0;i<markerDescriptionData.length -1;i++){
 				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(markerDescriptionData[i]);
 			}
 
-			for (var i = 0;i<markerNoteData.length;i++){
+			for (var i = 0;i<markerNoteData.length - 1;i++){
 				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(markerNoteData[i]);
 			}
 
@@ -604,6 +607,11 @@ class App extends Component {
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
 			
 			//Retrieve the data and plot it
+			if (saveWhenMapSet===true){
+				saveWhenMapSet = false;
+				this.save();
+			}
+			
 			this.load();
 			this.generateButtonList();
 			this.getMapData(mapName);
@@ -621,9 +629,9 @@ class App extends Component {
   save() {
 	  if (this.state.mapNameField!=""){
 	
-			if (!this.state.user){
-				this.login();
-			}
+			//if (!this.state.user){
+			//	this.login();
+			//}
 
 			//MOVE TO SAVE ROUTE
 			/*var lineData;
