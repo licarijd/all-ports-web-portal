@@ -1,3 +1,13 @@
+/*Developed by Justin Licari*/
+
+/*TODO:
+- fix search
+- save and reference pictures by map name, user id and timestamp. This referencing will make it easier to modifying
+- handle uploading pictures for pins
+- handle loading pictures for pins
+- only upload pictures after 'save pin' is clicked
+- adding pins to exiting maps doesn't save description and pin data*/
+
 import React, { Component } from 'react';
 import firebase, { auth, provider } from './fire.js';
 import logo from './logo.png';
@@ -25,24 +35,14 @@ import FileUploader from 'react-firebase-file-uploader';
 
 const storage = firebase.storage().ref()
 
-
-//The name of the currently loaded map
+//The name of the currently referenced map, set by either loading an existing map or by entering a name for a new map.
 var mapName = "";
 
-//Lists of all added markers and lines. Elements are added while drawing
+//Lists of all new markers and lines added to the current map via drawing tools.
 var markers = [];
 var lines = [];
 
-//Store all data associated with a pin
-var markerDescriptions = [];
-var markerNotes = [];
-var markerTags = [];
-var markerDates = [];
-
-//Store all data associated with a route
-var routeNames = [];
-var routeDescriptions = [];
-var routeNotes = [];
+//First and final co-ordinates of a route are stored for route direction
 var routeStarts = [];
 var routeFinishes = [];
 
@@ -59,15 +59,6 @@ window.currentMarkerObj = [];
 //A list of all of a user's map snapshots from Firebase
 var mapNameSnapshots = null;
 
-//The curently loaded map
-var pinName = "";
-var pinDescription = "";
-var pinNotes = "";
-var pinTags = "";
-
-var routeName = "";
-var pinNotes = "";
-
 //uid from Firebse
 var userID;
 
@@ -77,7 +68,7 @@ var mapButtonList = [];
 //Represents if the map list has been checked at the start of the program
 var mapsChecked = false;
 
-//Represents whether or not the map menu is displayed
+//Represents whether or not UI elements related to creating/modifying maps is displayed
 var mapDisplayActive = false;
 var mapDetailsActive = false;
 var addButtonDown = false;
@@ -97,9 +88,6 @@ var publicMap;
 //The full path to a public map
 var mapRef = null;
 
-//A counter of likes
-var likeCount = 0;
-
 //A map's date created
 var dateCreated = "11/07/17";
 
@@ -114,12 +102,14 @@ var routeNameData = [];
 var routeDistanceData = [];
 var routeNoteData = [];
 
+//Route's and pins are orgnized according to the order they re created/modified/loaded from firebase.
 var pinNum;
 var routeNum;
 
 //Array of Google Maps objects created to plot every marker. Used for creating  unique listener for every pin.
 var markerPlotRefs = [];
 
+//Used to reference 'this' in initMap.
 var thisRef;
 
 //If a user tries saving a marker or route before they have a map name, set this flag to true to indicate that it needs to be saved once the map is named.
@@ -185,7 +175,6 @@ class App extends Component {
       		var ref = db.ref('users/' + userID + '/maps/');
       		ref.orderByChild("markers").on("child_added", function (snapshot) {
          			mapNameSnapshots+="|"+snapshot.key; 
-					console.log(snapshot.key)
 					console.log(mapNameSnapshots)
         	});
 		}
@@ -199,41 +188,29 @@ class App extends Component {
 
   handleChangePinName(event) {
     this.setState({ pinNameField: event.target.value });
-    pinName = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangePinDescription(event) {
     this.setState({ pinDescriptionField: event.target.value });
-    pinDescription = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangePinNotes(event) {
     this.setState({ pinNotesField: event.target.value });
-    pinNotes = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangePinTags(event) {
     this.setState({ pinTagsField: event.target.value });
-    pinTags = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangeRouteName(event) {
     this.setState({ routeNameField: event.target.value });
-    routeName = event.target.value;
-    console.log(event.target.value);
   }
 
   handleChangeRouteNotes(event) {
     this.setState({ routeNotesField: event.target.value });
-    routeNotes = event.target.value;
-    console.log(event.target.value);
   }
 
-  //Gets an image via firebase URL and loads it into an element
+  //Gets an image via firebase URL and loads it into an element. Both JPG and PNG images are supported.
   getImage = function (image) {
     	let { state } = this
     
@@ -294,7 +271,6 @@ class App extends Component {
     auth.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
-        console.log("user: " + user);
         this.setState({
           user
         });
@@ -321,11 +297,6 @@ class App extends Component {
 	}
   }
 
-  showMapDetails() {
-  	var mapDetails = document.getElementById('map-details');
-  	mapDetails.hidden = false;
-  }
-
   activateSaveMapUI(){
 	var introElement = document.getElementById('save-map-popup');
 	introElement.hidden = false;
@@ -337,21 +308,6 @@ class App extends Component {
   }
 
   setPinDeleteUI() {
-    var introElement = document.getElementById('intro');
-    introElement.hidden = true;
-  }
-
-  setRouteDeleteUI() {
-    var introElement = document.getElementById('intro');
-    introElement.hidden = true;
-  }
-
-  delPinConfirmUI() {
-    var introElement = document.getElementById('intro');
-    introElement.hidden = true;
-  }
-
-  delRouteConfirmUI() {
     var introElement = document.getElementById('intro');
     introElement.hidden = true;
   }
@@ -373,7 +329,7 @@ class App extends Component {
 		return thumbnail;
   }
 
-  //Generate a code which can be used to construct a short URL that references a map. The ref is stored in a public database section.
+  //Generate a code which can be used to construct a short URL that references a map. The ref is stored in a public database section. NOT YET SUPPORTED
   share(){
 	  var shortUrl = this.hashCode(userID+mapName);
 	  var publicRef = 'users/' + userID + '/maps/' + "/" + mapName;
@@ -385,7 +341,6 @@ class App extends Component {
   }
 
   saveRoute(routeNum){
-	
 		//Save the map before saving route data associated with it
 		if (this.state.mapNameField!=""){
 
@@ -435,7 +390,6 @@ class App extends Component {
 				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(this.state.routeNameField);
 
 				//Push description and notes data if they exist. If not, set a default message.
-				
 				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(this.state.routeDistance);
 				
 
@@ -445,16 +399,6 @@ class App extends Component {
 					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push("Please enter notes");
 				}
 			}
-
-			//Add pins and routes to lists
-			/*for (var i = 0; i < lines.length; i++) {
-				var line = lines[i].position;
-				console.log(routeNameData[i])
-				if (routeNameData[i]&&routeNameData[i]!=""){
-					routeData += line + "+";
-
-				}
-			}*/
 
 			//Push the state of all current pins
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("lines").remove();
@@ -471,23 +415,8 @@ class App extends Component {
 			});
 		
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeTagsData").push(this.state.routeTagsField);
-			/*var dateAdded = new Date();
-			var dd = dateAdded.getDate();
-			var mm = dateAdded.getMonth()+1; //January is 0!
-
-			var yyyy = dateAdded.getFullYear();
-			if(dd<10){
-				dd='0'+dd;
-			} 
-			if(mm<10){
-				mm='0'+mm;
-			} 
-			var dateAdded = dd+'/'+mm+'/'+yyyy;*/
-
-			//markerDates.push(dateAdded);
-			//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
 			
-			//Retrieve the data and plot it
+			//Refresh the map, retrieve the data and plot it
 			this.load();
 			this.generateButtonList();
 			this.getMapData(mapName);
@@ -567,7 +496,6 @@ class App extends Component {
 			//Add pins and routes to lists
 			for (var i = 0; i < markers.length; i++) {
 				var marker = markers[i].position;
-				console.log(markerNameData[i])
 				if (markerNameData[i]&&markerNameData[i]!=""){
 					pinData += marker + "+";
 
@@ -603,7 +531,7 @@ class App extends Component {
 			} 
 			var dateAdded = dd+'/'+mm+'/'+yyyy;
 
-			markerDates.push(dateAdded);
+			//markerDates.push(dateAdded);
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
 			
 			//Retrieve the data and plot it
@@ -612,6 +540,7 @@ class App extends Component {
 				this.save();
 			}
 			
+			//Refresh the map, retrieve the data and plot it
 			this.load();
 			this.generateButtonList();
 			this.getMapData(mapName);
@@ -628,23 +557,10 @@ class App extends Component {
   //Handle save data related to maps, exclusive of pins and routes
   save() {
 	  if (this.state.mapNameField!=""){
-	
-			//if (!this.state.user){
-			//	this.login();
-			//}
-
-			//MOVE TO SAVE ROUTE
-			/*var lineData;
-
-			for (var i = 0; i < lines.length; i++) {
-				var line = lines[i].getPath().getArray();
-				lineData += line + "+";
-			}*/
 
 			//Push all map data to Firebase, including a number to represent added pictures, excluding the image files
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/mapName").push(mapName);
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/author").push(userID);
-			//firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
 			var dateAdded = new Date();
 			var dd = dateAdded.getDate();
@@ -661,7 +577,7 @@ class App extends Component {
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
 			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
 			
-			
+			//Cam data is used to position the map's view upon reloading
 			if (!camZoom){
 				camZoom = 8;
 			}
@@ -795,11 +711,8 @@ class App extends Component {
 
   //Retrieve and parse all data from Firebase needed to construct a map's pins and routes
   getMapData(mapID){
-	//markerNames = [];
 
-	this.showMapUI();
-
-	//this.showMapDetails(); 
+	this.showMapUI(); 
     this.setState({ loadedImage: [] })
     this.setState({ mapNameField: mapID });
     mapName = mapID + "";
@@ -821,7 +734,7 @@ class App extends Component {
     var db = firebase.database();
 	var routeRef;
 
-	//Use full path for loading public maps
+	//Use different (public) path for loading public maps
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/lines/');
 	} else {
@@ -842,7 +755,7 @@ class App extends Component {
         markerDataString+=snapshot.val(); 
     });
 
-	//Pin/route Names, Descriptions, and Notes
+	//Retrieve pin/route Names, Descriptions, and Notes
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerNameData/');
 	} else {
@@ -903,13 +816,13 @@ class App extends Component {
         routeNoteDataString+=snapshot.val()+("+"); 
     });
     
-	//If firebase data exists for a given ttribute, set global references to it and update the form with the first pin's info
+	//If firebase data exists for a given attribute, set global references to it and update the form with the first pin's info
 	if(markerNameDataString){
     	markerNameDataString = markerNameDataString.substr(9);
     	markerNameData = markerNameDataString.split("+"); 
 		markerNameData.pop();
 
-		//Show pin info for the first pin
+		//By defalut, start by showing pin info for the first pin added to the loaded map
 		var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = false;
 		this.setPinFormData(0);
@@ -923,6 +836,7 @@ class App extends Component {
 		this.setPinFormData(0);
     }
 
+	//First 9 characters are always 'undefined' so remove them, as well as whitespace and seperators
 	if(markerNoteDataString){
     	markerNoteDataString = markerNoteDataString.substr(9);
     	markerNoteData = markerNoteDataString.split("+"); //Show pin info for the first pin
@@ -1071,7 +985,7 @@ class App extends Component {
   //Render introduction overlay when web app starts
   render() {
     return (
-      <div id="interctable" >
+      <div id="interctable">
 		<div id = "save-map-popup" className = "save-map-popup">
 			<h2 id = "welcome-back-save" className = "welcome-back-save">Welcome back!
 			You can now finalize details and save your map to your account</h2>
@@ -1107,12 +1021,15 @@ class App extends Component {
         <div id="top-panel" className="top-panel">
   		<input id="pac-input" className="controls" type="text" placeholder="Search"></input>
 		<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>
-		{this.state.user ?
+
+		{/*If a user tries to save and isn't logged in, prompt login. If they are, activate the save map UI*/
+			this.state.user ?
               <button  className="save-map" onClick={this.activateSaveMapUI}>Save Map</button>
               :
               <button  className="save-map" onClick={this.login}>Save Map</button>
             }
-			{this.state.user ?
+			{/*Logout button provided for testing*/
+			this.state.user ?
               <button onClick={this.logout}>Log Out</button>
               :
               <button onClick={this.login}>Ignore this button for now</button>
@@ -1169,6 +1086,8 @@ class App extends Component {
 					<img src={this.state.avatarURL} />
 					}
 					<label>
+					{/*currently, uploaded pictures are attached to the current map. TODO: attach to current pin. 
+					They are organized by the order in which they are uploaded(currentPictures). TODO: add timestamp*/}
 					<img src={addPhotoIcon} className = "addphotoicon" />
 							<FileUploader
 							hidden
@@ -1205,19 +1124,18 @@ class App extends Component {
               return (
                 <div className="box" key={index}>
                   <div>
-					{/*<input type="image" src={this.getThumnail(item)} onClick={() => this.getMapData(item)}>*/}
+					{/*A button is generated for every loaded map name. Clicking a button will load it's map*/}
 					<button className = "map-button-list" onClick={() => this.getMapData(item)}>
 						<span className = "map-button-view">
 							<img className = "map-thumb" src={this.getThumnail(item)}></img>
 							<span className = "map-button-overlay">
 								<span className = "map-name-text">{item}</span>
 								<span className = "map-created-on">Created on {dateCreated}</span>
-								<span className = "map-likes">{likeCount}</span>
+								<span className = "map-likes">{likes}</span>
 								<img className = "map-favs" src={favsIcon}></img>
 							</span>	
 						</span>	      
 					</button>
-					{/*</input>*/}
                   </div>
                 </div>
               )
@@ -1232,6 +1150,7 @@ class App extends Component {
           />
           <br /><br />
             <br /><br />Photos <br />
+			{/*TODO: display a pin's pictures*/}
             {this.state.loadedImage.map((item, index) => {
               return (
                 <div className="box" key={index}>
@@ -1287,7 +1206,7 @@ class App extends Component {
 	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
 		publicMap = true;
 
-		//CHANGE FOR PROD
+		//CHANGE FOR PROD. Checks if the page is loading a shortURL
 		var shortUrlCode = window.location.href.substr(22/*33*/);
 		console.log("shortUrlCode"+shortUrlCode)
 		var db = firebase.database();
@@ -1312,23 +1231,8 @@ class App extends Component {
   //Load the Google Map 
   initMap = function() {
 
-	//Used for subsequent references to 'this' from when initmap was initialized when a polyline is drawn
-	
-	//thisRefInit.setPinFormData(0);
-	
-	//if(window.currentMarkerObj[0]!="taters"){
-	//var
-	 //thisRef.test();
-
-	//for (var i=0;i<2;i++){
-//thisRef.clearFormData();
-	//}
-	//
-	//}
-	
-
-	  //Every time a new map is loaded, maps is cleared and updated with the latest firebase data
-	  markers = [];
+	//Every time a new map is loaded, maps is cleared and updated with the latest firebase data
+	markers = [];
 
 	//Set default cam position values if none exist
 	if (!camZoom){
@@ -1339,12 +1243,10 @@ class App extends Component {
 		camTarget = {lat: -34.397, lng: 150.644}
 	}
 	
-     var map = new google.maps.Map(document.getElementById('map'), {
+    var map = new google.maps.Map(document.getElementById('map'), {
 
 	center: {lat: -34.397, lng: 150.644},
        zoom: 8
-       //center: camTarget,//{lat: -34.397, lng: 150.644},
-       //zoom: camZoom//8
      });
 
 	//Allow drawing on the map
@@ -1408,8 +1310,8 @@ class App extends Component {
 		revRouteControlUI.style.visibility = "visible";
 	});
 	
-     routeModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
+    routeModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(routeModeDiv);
 
 	//Create button for adding maps
 	var mapModeDiv = document.createElement('div');
@@ -1437,7 +1339,7 @@ class App extends Component {
 	controlText.innerHTML = '      ';
 	mapControlUI.appendChild(controlText);
 
-	// Switch drawing type to marker
+	//Switch drawing type to marker
 	mapControlUI.addEventListener('click', function() {
 		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.MARKER);
 		mapControlUI.style.backgroundImage =  "url(" + downAddMapIcon + ")";
@@ -1570,8 +1472,7 @@ class App extends Component {
 			markers.pop();
 		}	
 
-		console.log(markerNameData + "  " + markers.length)
-		if (/*markers.length<markerNameData.length&&*/markerNameData.length>0){
+		if (markerNameData.length>0){
 			markerNameData.pop();
 		}	
 	});
@@ -1620,8 +1521,8 @@ class App extends Component {
 		markerNameData = [];
 	});
 	
-     delAllPinModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllPinModeDiv);
+    delAllPinModeDiv.index = 1;
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllPinModeDiv);
 
 	//Create delete Route button
 	var delRouteModeDiv = document.createElement('div');
@@ -1661,7 +1562,7 @@ class App extends Component {
 			lines.pop();
 		}
 
-		if (/*markers.length<markerNameData.length&&*/routeNameData.length>0){
+		if (routeNameData.length>0){
 			routeNameData.pop();
 		}	
 	});
@@ -1738,7 +1639,7 @@ class App extends Component {
 	controlText.innerHTML = 'Reverse Route';
 	revRouteControlUI.appendChild(controlText);
 
-	//Reverse route
+	//TODO: reverse route
 	revRouteControlUI.addEventListener('click', function() {
 		
 		console.log("before rev: " + lines[lines.length-1].getPath().getArray());
@@ -1782,25 +1683,15 @@ class App extends Component {
 				flightPlanCoordinates.push({lat: parseFloat(window.currentRouteObj[i].lat), lng: parseFloat(window.currentRouteObj[i].lng)});
             }
         }
-
 		window.currentRouteObj = [];
   	}
 
-//if(window.currentMarkerObj[0]!="tt"){
-		 // thisRef.clearFormData();
-//}
-
   	if(window.currentMarkerObj[0]){
-		  console.log(window.currentMarkerObj);
-
-	//window.currentMarkerObj = window.currentMarkerObj.slice(0, window.currentMarkerObj.length/2 - 1);
 
 	//Draw markers (only works if marker like description and notes data is present)
 	var tmpInfo = markerNameData;
-	console.log(tmpInfo);
     for (var i=0;i<window.currentMarkerObj.length-1;i++){
 	var display = tmpInfo[i].toString();
-	console.log(display);
 
 	  //Create the info window for pins containing the location name
 	  var contentString = '<div id="content">'+
@@ -1819,24 +1710,18 @@ class App extends Component {
         });
 
 		markers.push(marker);
-
-		console.log(display);
 		infowindow.open(map, marker);
 
 		//Create an object for referencing the current point. Pass this to be used as a reference inside of the listener
 		markerPlotRefs[i] = {"title": marker.toString(), "obj": marker, "ref": i, "_this": this};
 		
 		//Add click listeners to markers to bring up info and siplay data
-		
 		markerPlotRefs[i].obj.addListener('click', function() {
 			
 		  //Find the reference number for the current marker
 		  for (var j=0;j<markerPlotRefs.length;j++){
 			  if (this === markerPlotRefs[j].obj){
 
-				console.log(markerPlotRefs[j].ref);
-
-				
 				//Call outer functions referencing outer 'this'
 				markerPlotRefs[j]._this.setPinFormData(j);
 				thisRef.setRouteDistance();
@@ -1844,11 +1729,10 @@ class App extends Component {
 		  }
         });
       }
-	  console.log(markerPlotRefs)
       window.currentMarkerObj = []; 
   	}
 
-	//When a user draws a route or plots a pin, add it to lists to be saved
+	//When a user draws a route or plots a pin/route, add it to lists to be saved
     google.maps.event.addDomListener(drawingManager, 'markercomplete', function(marker) {
 		currentPinRef = -1;
 		//If a user didn't name their pin, get rid of it
@@ -1870,14 +1754,13 @@ class App extends Component {
 	    //Track camera position
 	    camZoom = map.getZoom();
 	    camTarget = map.getCenter();
-
-	  //To remove all, loop this
     });
 
     google.maps.event.addDomListener(drawingManager, 'polylinecomplete', function(line) {
 		currentRouteRef = -1;
+
+		//If a user didn't name their route, get rid of it
 		if (lines.length > 0 && !routeNameData[lines.length-1] || routeNameData[lines.length-1] == ""){
-			
 			lines[lines.length - 1].setMap(null);
 			lines.pop();
 		}
@@ -1885,12 +1768,8 @@ class App extends Component {
 
 		//Get the route distance to one decimal place.
 		currentRouteDistance = Math.round(google.maps.geometry.spherical.computeLength(line.getPath()) * 10) / 10;
-
-		//if(window.currentMarkerObj[0]!="taters"){
 		thisRef.setRouteDistance();
-		//}
-		console.log(currentRouteDistance);
-
+		
 		//Set start and finish
 		var tmp = lines[lines.length-1].getPath().getArray();
 		routeStarts.push(tmp[0]);
@@ -1898,7 +1777,6 @@ class App extends Component {
 
 		var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = true;
-
 	    var createRoutePanel = document.getElementById('popup-create-route-panel');
         createRoutePanel.hidden = false;
 		var mapsPanel = document.getElementById('popup-maps-panel');
