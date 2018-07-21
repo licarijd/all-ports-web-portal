@@ -35,6 +35,9 @@ import FileUploader from 'react-firebase-file-uploader';
 
 const storage = firebase.storage().ref()
 
+//The name of the airport being set up
+var airport = "";
+
 //The name of the currently referenced map, set by either loading an existing map or by entering a name for a new map.
 var mapName = "";
 
@@ -172,7 +175,7 @@ class App extends Component {
 
     		//Get the names of all of a user's maps, and add to a list. This will be used to generate links in the 'maps' section
       		var db = firebase.database();
-      		var ref = db.ref('users/' + userID + '/maps/');
+      		var ref = db.ref('airports/' + userID + '/maps/');
       		ref.orderByChild("markers").on("child_added", function (snapshot) {
          			mapNameSnapshots+="|"+snapshot.key; 
 					console.log(mapNameSnapshots)
@@ -281,7 +284,8 @@ class App extends Component {
   //Show/hide GUI elements 
   dismissIntro() {
     var introElement = document.getElementById('intro');
-    introElement.hidden = true;
+	introElement.hidden = true;
+	this.login()
   }
 
   //UI methods deal with activating/deactivating dom elements
@@ -319,7 +323,7 @@ class App extends Component {
 	  	var thumbnail;
 
     	var db = firebase.database();
-		var ref = db.ref('users/' + userID + '/maps/' + mapName + '/thumbnail');
+		var ref = db.ref('airports/' + userID + '/maps/' + mapName + '/thumbnail');
       	ref.orderByChild("thumbnail").on("child_added", function (snapshot) {
   			thumbnail = snapshot.val();
 		}, function (errorObject) {
@@ -332,7 +336,7 @@ class App extends Component {
   //Generate a code which can be used to construct a short URL that references a map. The ref is stored in a public database section. NOT YET SUPPORTED
   share(){
 	  var shortUrl = this.hashCode(userID+mapName);
-	  var publicRef = 'users/' + userID + '/maps/' + "/" + mapName;
+	  var publicRef = 'airports/' + userID + '/maps/' + "/" + mapName;
 	  firebase.database().ref('publicMaps/' + shortUrl + "/ref").push(publicRef);
   }
 
@@ -349,13 +353,13 @@ class App extends Component {
 
 			for (var i = 0; i < lines.length; i++) {
 				var line = lines[i].getPath().getArray();
-				lineData += line + "+";
+				lineData += line + "#";
 			}
 
 			//Clear the current state of the route data for the current map. By writing the current state of route data, we can handle deletion and updating.
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeNameData").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeDistanceData").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("routeNotesData").remove();
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/").child("routeNameData").remove();
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/").child("routeDistanceData").remove();
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/").child("routeNotesData").remove();
 
 			//If a route is being referenced and the route already has data associated with it, update that data with the input fields.
 			if (currentRouteRef>=0){
@@ -373,36 +377,36 @@ class App extends Component {
 			} 
 
 			for (var i = 0;i<routeNameData.length;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(routeNameData[i]);
+				firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(routeNameData[i]);
 			}
 
 			for (var i = 0;i<routeDistanceData.length;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(routeDistanceData[i]);
+				firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(routeDistanceData[i]);
 			}
 
 			for (var i = 0;i<routeNoteData.length;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(routeNoteData[i]);
+				firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(routeNoteData[i]);
 			}
 
 			//If no route is being referenced, then it is a new route.
 			if (this.state.routeNameField!="" && currentRouteRef<0){
 				routeNameData.push(this.state.routeNameField);
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(this.state.routeNameField);
+				firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeNameData").push(this.state.routeNameField);
 
 				//Push description and notes data if they exist. If not, set a default message.
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(this.state.routeDistance);
+				firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeDistanceData").push(this.state.routeDistance);
 				
 
 				if (this.state.routeNotesField!=""){
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(this.state.routeNotesField);
+					firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push(this.state.routeNotesField);
 				} else {
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push("Please enter notes");
+					firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeNotesData").push("Please enter notes");
 				}
 			}
 
 			//Push the state of all current pins
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("lines").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/").child("lines").remove();
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/lines").push(lineData);
 
 			this.setState({
 				routeNameField: ""
@@ -414,7 +418,7 @@ class App extends Component {
 				routeNotesField: ""
 			});
 		
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/routeTagsData").push(this.state.routeTagsField);
+			firebase.database().ref('airports/' + userID + '/maps/' + "/" + mapName + "/routeTagsData").push(this.state.routeTagsField);
 			
 			//Refresh the map, retrieve the data and plot it
 			this.load();
@@ -432,20 +436,24 @@ class App extends Component {
 
   //Save the state of the current list of pins
   savePin(pinNum) {
+
+	/*var yourSelect = document.getElementById( "select-place-type" );
+	console.log( yourSelect.options[ yourSelect.selectedIndex ].value )*/
+
 	  	if(!this.state.user){
 			  this.login();
 		  }
 
 		//Save the map before saving pin data associated with it
-		if (this.state.mapNameField!=""){
+		//if (this.state.mapNameField!=""){
 
 			pinNum = markers.length-1;
 			var pinData;
 
 			//Clear the current state of the pin data for the current map. By writing the current state of pin data, we can handle deletion and updating.
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNameData").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerDescriptionData").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markerNotesData").remove();
+			firebase.database().ref('airports/' + airport + '/maps/').child("markerNameData").remove();
+			firebase.database().ref('airports/' + airport + '/maps/').child("markerDescriptionData").remove();
+			firebase.database().ref('airports/' + airport + '/maps/').child("markerNotesData").remove();
 
 			//If a pin is being referenced and the pin already has data associated with it, update that data with the input fields.
 			if (currentPinRef>=0){
@@ -463,33 +471,33 @@ class App extends Component {
 			} 
 
 			for (var i = 0;i<markerNameData.length;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
+				firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerNameData").push(markerNameData[i]);
 			}
 
 			for (var i = 0;i<markerDescriptionData.length -1;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(markerDescriptionData[i]);
+				firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerDescriptionData").push(markerDescriptionData[i]);
 			}
 
 			for (var i = 0;i<markerNoteData.length - 1;i++){
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(markerNoteData[i]);
+				firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerNotesData").push(markerNoteData[i]);
 			}
 
 			//If no pin is being referenced, then it is a new pin.
 			if (this.state.pinNameField!="" && currentPinRef<0){
 				markerNameData.push(this.state.pinNameField);
-				firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
+				firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerNameData").push(this.state.pinNameField);
 
 				//Push description and notes data if they exist. If not, set a default message.
 				if (this.state.pinDescriptionField!=""){
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push(this.state.pinDescriptionField);
+					firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerDescriptionData").push(this.state.pinDescriptionField);
 				} else {
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDescriptionData").push("Please enter a description");
+					firebase.database().ref('airports/' + airport+ '/maps/' + "/" + mapName + "/markerDescriptionData").push("Please enter a description");
 				}
 
 				if (this.state.pinNotesField!=""){
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push(this.state.pinNotesField);
+					firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerNotesData").push(this.state.pinNotesField);
 				} else {
-					firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerNotesData").push("Please enter notes");
+					firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerNotesData").push("Please enter notes");
 				}
 			}
 
@@ -497,14 +505,14 @@ class App extends Component {
 			for (var i = 0; i < markers.length; i++) {
 				var marker = markers[i].position;
 				if (markerNameData[i]&&markerNameData[i]!=""){
-					pinData += marker + "+";
+					pinData += marker + "#";
 
 				}
 			}
 
 			//Push the state of all current pins
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/").child("markers").remove();
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markers").push(pinData);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/").child("markers").remove();
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markers").push(pinData);
 
 			this.setState({
 				pinNameField: ""
@@ -516,8 +524,8 @@ class App extends Component {
 				pinNotesField: ""
 			});
 		
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerTagsData").push(this.state.pinTagsField);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName  + "/markerPicData").child("pics").set({pics: this.state.currentPinPictures});
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerTagsData").push(this.state.pinTagsField);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName  + "/markerPicData").child("pics").set({pics: this.state.currentPinPictures});
 			var dateAdded = new Date();
 			var dd = dateAdded.getDate();
 			var mm = dateAdded.getMonth()+1; //January is 0!
@@ -532,7 +540,7 @@ class App extends Component {
 			var dateAdded = dd+'/'+mm+'/'+yyyy;
 
 			//markerDates.push(dateAdded);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/markerDateAddedData").push(dateAdded);
 			
 			//Retrieve the data and plot it
 			if (saveWhenMapSet===true){
@@ -542,16 +550,16 @@ class App extends Component {
 			
 			//Refresh the map, retrieve the data and plot it
 			this.load();
-			this.generateButtonList();
+			//this.generateButtonList();
 			this.getMapData(mapName);
 			var mapsPanel = document.getElementById('popup-maps-panel');
 			mapsPanel.hidden = true;
 
 	//Prompt users to create a map if they haven't already
-	} else {
+	/*} else {
 		saveWhenMapSet = true;
 		this.activateSaveMapUI();
-	}
+	}*/
   }
 
   //Handle save data related to maps, exclusive of pins and routes
@@ -559,9 +567,10 @@ class App extends Component {
 	  if (this.state.mapNameField!=""){
 
 			//Push all map data to Firebase, including a number to represent added pictures, excluding the image files
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/mapName").push(mapName);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/author").push(userID);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/mapName").push(mapName);
+			firebase.database().ref('airports/' + airport + '/airport/' + "/" + mapName + "/mapName").push(mapName);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/author").push(userID);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName).child("pics").set({pics: this.state.currentPinPictures});
 			var dateAdded = new Date();
 			var dd = dateAdded.getDate();
 			var mm = dateAdded.getMonth()+1; //January is 0!
@@ -574,8 +583,8 @@ class App extends Component {
 				mm='0'+mm;
 			} 
 			var dateAdded = dd+'/'+mm+'/'+yyyy;
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/likes").push(likes);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/dateAdded").push(dateAdded);
+			firebase.database().ref('airports/' + airport+ '/maps/' + "/" + mapName + "/likes").push(likes);
 			
 			//Cam data is used to position the map's view upon reloading
 			if (!camZoom){
@@ -592,9 +601,9 @@ class App extends Component {
 			
 			}
 
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camZoom").push(camZoom);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
-			firebase.database().ref('users/' + userID + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
+			firebase.database().ref('airports/' + airport+ '/maps/' + "/" + mapName + "/camZoom").push(camZoom);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/camTarget").push(camTargetVal);
+			firebase.database().ref('airports/' + airport + '/maps/' + "/" + mapName + "/thumbnail").push(thumbnail);
 
 			this.deactivateSaveMapUI();
 	  }
@@ -617,7 +626,7 @@ class App extends Component {
 		if (publicMap) {
     		ref = db.ref(mapRef + '/pics');
 		} else {
-			ref = db.ref('users/' + userID + '/maps/' + mapName + '/pics');	
+			ref = db.ref('airports/' + userID + '/maps/' + mapName + '/pics');	
 		}
 		
       	ref.orderByChild("pics").on("child_added", function (snapshot) {
@@ -651,7 +660,7 @@ class App extends Component {
 		}
 
     	/* Create reference to maps in Firebase Database */
-    	let messagesRef = firebase.database().ref('users/' + userID + '/maps/' + mapName).orderByKey().limitToLast(100);
+    	let messagesRef = firebase.database().ref('airports/' + airport + '/maps/' + mapName).orderByKey().limitToLast(100);
     	messagesRef.on('child_added', snapshot => {
 
       	/* Load map plot data from Firebase */
@@ -674,7 +683,7 @@ class App extends Component {
 		if (publicMap) {
     		ref = db.ref(mapRef + '/markerPicData');
 		} else {
-			ref = db.ref('users/' + userID + '/maps/' + mapName + '/markerPicData');	
+			ref = db.ref('airports/' + airport + '/maps/' + mapName + '/markerPicData');	
 		}
 		
       	ref.orderByChild("pics").on("child_added", function (snapshot) {
@@ -738,7 +747,7 @@ class App extends Component {
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/lines/');
 	} else {
-		routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/lines/');
+		routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/lines/');
 	}
 
     routeRef.orderByChild("markers").on("child_added", function (snapshot) {
@@ -748,7 +757,7 @@ class App extends Component {
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/markers/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markers/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/markers/');	
 	}
 
     routeRef.orderByChild("markers").on("child_added", function (snapshot) {
@@ -759,67 +768,67 @@ class App extends Component {
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerNameData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerNameData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/markerNameData/');	
 	}
 
     routeRef.orderByChild("name").on("child_added", function (snapshot) {
-        markerNameDataString+=snapshot.val()+("+"); 
+        markerNameDataString+=snapshot.val()+("#"); 
     });
 
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/routeNameData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeNameData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/routeNameData/');	
 	}
 
     routeRef.orderByChild("name").on("child_added", function (snapshot) {
-        routeNameDataString+=snapshot.val()+("+"); 
+        routeNameDataString+=snapshot.val()+("#"); 
     });
 
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerDescriptionData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerDescriptionData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/markerDescriptionData/');	
 	}
 
     routeRef.orderByChild("desc").on("child_added", function (snapshot) {
-        markerDescriptionDataString+=snapshot.val()+("+"); 
+        markerDescriptionDataString+=snapshot.val()+("#"); 
     });
 	
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/routeDistanceData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeDistanceData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/routeDistanceData/');	
 	}
 
     routeRef.orderByChild("desc").on("child_added", function (snapshot) {
-        routeDistanceDataString+=snapshot.val()+("+"); 
+        routeDistanceDataString+=snapshot.val()+("#"); 
     });
 
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/markerNotesData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/markerNotesData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/markerNotesData/');	
 	}
 
     routeRef.orderByChild("notes").on("child_added", function (snapshot) {
-        markerNoteDataString+=snapshot.val()+("+"); 
+        markerNoteDataString+=snapshot.val()+("#"); 
     });
 
 	if (publicMap) {
     	routeRef = db.ref(mapID + '/routeNotesData/');
 	} else {
-    	routeRef = db.ref('users/' + userID + '/maps/' + mapID + '/routeNotesData/');	
+    	routeRef = db.ref('airports/' + airport + '/maps/' + mapID + '/routeNotesData/');	
 	}
 
     routeRef.orderByChild("notes").on("child_added", function (snapshot) {
-        routeNoteDataString+=snapshot.val()+("+"); 
+        routeNoteDataString+=snapshot.val()+("#"); 
     });
     
 	//If firebase data exists for a given attribute, set global references to it and update the form with the first pin's info
 	if(markerNameDataString){
     	markerNameDataString = markerNameDataString.substr(9);
-    	markerNameData = markerNameDataString.split("+"); 
+    	markerNameData = markerNameDataString.split("#"); 
 		markerNameData.pop();
 
 		//By defalut, start by showing pin info for the first pin added to the loaded map
@@ -830,7 +839,7 @@ class App extends Component {
 
 	if(markerDescriptionDataString){
     	markerDescriptionDataString = markerDescriptionDataString.substr(9);
-    	markerDescriptionData = markerDescriptionDataString.split("+"); //Show pin info for the first pin
+    	markerDescriptionData = markerDescriptionDataString.split("#"); //Show pin info for the first pin
 		var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = false;
 		this.setPinFormData(0);
@@ -839,7 +848,7 @@ class App extends Component {
 	//First 9 characters are always 'undefined' so remove them, as well as whitespace and seperators
 	if(markerNoteDataString){
     	markerNoteDataString = markerNoteDataString.substr(9);
-    	markerNoteData = markerNoteDataString.split("+"); //Show pin info for the first pin
+    	markerNoteData = markerNoteDataString.split("#"); //Show pin info for the first pin
 		var createPinPanel = document.getElementById('popup-create-pin-panel');
         createPinPanel.hidden = false;
 		this.setPinFormData(0);
@@ -850,7 +859,7 @@ class App extends Component {
     	markerDataString = markerDataString.substr(18);
 		markerDataString = markerDataString.replace(" ", "");
     	var markerData = markerDataString;
-    	markerData = markerDataString.split("+"); 
+    	markerData = markerDataString.split("#"); 
     	for (var i=0;i<markerData.length;i++){
         	markerData[i] = markerData[i].replace("(", "");
         	markerData[i] = markerData[i].replace(")", "");
@@ -866,7 +875,7 @@ class App extends Component {
 		routeDataString = routeDataString.replace("(", "");
     	routeDataString = routeDataString.replace(" ", "");
     	var routeData = routeDataString;
-    	routeData = routeDataString.split("+"); 
+    	routeData = routeDataString.split("#"); 
 
 		//Route data is parsed according to + signs to seperate routes. 2D arrays and loops are needed since each route is a list of markers, and the route data is a list of routes
   		var routeDataCoordinates1 = [];
@@ -905,7 +914,7 @@ class App extends Component {
 	if (publicMap){
     	camRef = db.ref(mapID + '/camZoom/');
 	} else {
-		camRef = db.ref('users/' + userID + '/maps/' + mapID + '/camZoom/');
+		camRef = db.ref('airports/' + airport+ '/maps/' + mapID + '/camZoom/');
 	}
 	
     routeRef.orderByChild("camZoom").on("child_added", function (snapshot) {
@@ -915,7 +924,7 @@ class App extends Component {
 	if (publicMap){
     	camRef = db.ref(mapID + '/camTarget/');
 	} else {
-		camRef = db.ref('users/' + userID + '/maps/' + mapID + '/camTarget/');
+		camRef = db.ref('airports/' + airport + '/maps/' + mapID + '/camTarget/');
 	}
 
 	//Draw the map
@@ -995,12 +1004,12 @@ class App extends Component {
             value={this.state.mapNameField}
             onChange={this.handleChange}
           />
-			<button id="save-map-button" className="save-map-button" onClick={this.savePin.bind(this)}>Save Map</button>
+			{/*<button id="save-map-button" className="save-map-button" onClick={this.savePin.bind(this)}>Save Map</button>
 			<button id="cancel-save-map" className="cancel-save-map" onClick={this.deactivateSaveMapUI}>cancel</button>
-		</div>
+	*/}</div>
         <div id="intro">
 		<div className="Rectangle-3"></div>
-		  <img src={addArrow} className="App-add-arrow" alt="addArrow" />
+		 {/* <img src={addArrow} className="App-add-arrow" alt="addArrow" />
 		  <img src={searchArrow} className="App-search-arrow" alt="searchArrow" />
 		  <img src={viewSettingsArrow} className="App-view-settings" alt="viewSettingsArrow" />
 		  <img src={viewMapsArrow} className="App-view-maps" alt="viewMapsArrow" />
@@ -1011,28 +1020,61 @@ class App extends Component {
 		  <div className="Search-for-a-locatio">Search for a location to begin creating maps with pins and routes</div>
 		  <div className="When-you-have-a-map">When you have a map with pins and routes, these options will appear on the top right</div>
 		  <div className="Begin-by-adding-a-ro">Begin by adding a route or pin to your map through this floating button here</div>
-          <button onClick={this.dismissIntro} className="App-intro-button">
-            Okay, let's start
+*/} <button onClick={this.dismissIntro.bind(this)} className="App-intro-button">
+            Sign In and Find Your Airport
                </button>
         </div>	
         <button hidden onClick={this.test.bind(this)} className="load-button">
             TEST
           </button>
-        <div id="top-panel" className="top-panel">
-  		<input id="pac-input" className="controls" type="text" placeholder="Search"></input>
-		<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>
+        <div id="top-panel2" className="top-panel2">
+		<div class="pac-card" id="pac-card">
+      <div id="places-search-settings">
+        <div id="title">
+          Autocomplete search
+        </div>
+        <div id="type-selector" class="pac-controls">
+          <input type="radio" name="type" id="changetype-all" checked="checked"></input>
+          <label for="changetype-all">All</label>
 
-		{/*If a user tries to save and isn't logged in, prompt login. If they are, activate the save map UI*/
+          <input type="radio" name="type" id="changetype-establishment"></input>
+          <label for="changetype-establishment">Establishments</label>
+
+          <input type="radio" name="type" id="changetype-address"></input>
+          <label for="changetype-address">Addresses</label>
+
+          <input type="radio" name="type" id="changetype-geocode"></input>
+          <label for="changetype-geocode">Geocodes</label>
+        </div>
+        <div id="strict-bounds-selector" class="pac-controls">
+          <input type="checkbox" id="use-strict-bounds" value=""></input>
+          <label for="use-strict-bounds">Strict Bounds</label>
+        </div>
+      </div>
+      <div id="pac-container">
+        <input id="pac-input" type="text"
+            placeholder="Enter and select the address of your airport"></input>
+      </div>
+    </div>
+	<div id="infowindow-content">
+      <img src="" width="16" height="16" id="place-icon"></img>
+      <span id="place-name"  class="title"></span>
+      <span id="place-address"></span>
+    </div>
+		
+	{/*}	<button className="share-map" onClick={this.share.bind(this)}> Share Map</button>}
+
+		/*{If a user tries to save and isn't logged in, prompt login. If they are, activate the save map UI
 			this.state.user ?
               <button  className="save-map" onClick={this.activateSaveMapUI}>Save Map</button>
               :
               <button  className="save-map" onClick={this.login}>Save Map</button>
-            }
-			{/*Logout button provided for testing*/
+            }*/}
+			{/*Logout button provided for testing
 			this.state.user ?
               <button onClick={this.logout}>Log Out</button>
               :
-              <button onClick={this.login}>Ignore this button for now</button>
+              <button onClick={this.login}>Ignore this button for now</button>*/
             }
           <img src={logo} className="App-logo" alt="logo" />
           <div className = "profile-details"  id="profile-details">
@@ -1057,20 +1099,25 @@ class App extends Component {
 			<input type="image" src={deleteIcon} className="delete-pin"></input>
           </div>
 		  <div className = "popup-create-pin-panel"  id="popup-create-pin-panel">
-			<img src = {favsIcon2} className = "favs-icon-2"/>
-			<h2 className = "place">Place</h2>
+			<h2 className = "place">Place:</h2>
 				<input className = "place-input"
 					type="text"
 					value={this.state.pinNameField}
 					onChange={this.handleChangePinName}
 				/>
-			<h2 className = "description">Description</h2>
+
+		{/*}  <select id = "select-place-type">
+  <option value="food">Food and Drink</option>
+  <option value="washroom">Washroom</option>
+  <option value="escalator">Escalator</option>
+		</select>*/}
+			<h2 className = "description">Place Type:</h2>
 				<input className = "description-input"
 					type="text"
 					value={this.state.pinDescriptionField}
 					onChange={this.handleChangePinDescription}
 				/>
-			<h2 className = "notes">Notes</h2>
+			<h2 className = "notes">Location and Info:</h2>
 				<input className = "notes-input"
 					type="text"
 					value={this.state.pinNotesField}
@@ -1078,7 +1125,7 @@ class App extends Component {
 				/>
 			<div className = "photos-input">
 				<form>
-					<label className = "photos">Photos</label>
+					<label className = "photos">Upload Photos:</label>
 					{this.state.isUploading &&
 					<p>Progress: {this.state.progress}</p>
 					}
@@ -1093,8 +1140,8 @@ class App extends Component {
 							hidden
 							accept="image/*"
 							name="avatar"
-							filename={mapName + this.state.currentPinPictures}
-							storageRef={firebase.storage().ref('images/'+ mapName + '/pinData/' + this.state.currentPinPictures)}
+							filename="image"
+							storageRef={firebase.storage().ref('images/'+ airport + this.state.pinNameField)}
 							onUploadStart={this.handleUploadStart}
 							onUploadError={this.handleUploadError}
 							onUploadSuccess={this.handleUploadSuccess}
@@ -1103,15 +1150,12 @@ class App extends Component {
 					</label>
 				</form>
 			</div>
-			<input type="image" src={saveIcon} className="save-pin" onClick={this.savePin.bind(this)}></input>
-			<input type="image" src={deleteIcon} className="delete-pin"></input>
+			<button className="save-pin" onClick={this.savePin.bind(this)}>SAVE</button>
+			<button className="delete-pin">DELETE</button>
           </div>
         </div>
-        <div id="side-panel" className="side-panel">
-		  <input type="image" src={settingsIcon} className="settings-button" alt="settingsIcon"/>
-		  <input type="image" onClick={this.showMapUI} src={mapsIcon} className="maps-button" alt="mapsIcon" text="Maps"/>
-		  <input type="image" src={collectionsIcon} className="collections-button" alt="collectionsIcon"/>
-		  <input type="image" src={favsIcon} className="favs-button" alt="favsIcon"/>
+        <div id="side-panel2" className="side-panel2">
+		  
           <div className = "popup-maps-panel"  id="popup-maps-panel">
             <div>
               {this.state.user && !mapsChecked ? this.load() : false
@@ -1181,7 +1225,8 @@ class App extends Component {
 	//Initialize Google Maps API when the site loads. If Google Maps API didn't load correctly, reload the page.
     if(google){
       	window.initMap = this.initMap;
-      	loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyAbP4svkwQIWh2S5TujdpOKLPI9plVj2s0&libraries=drawing&callback=initMap')
+      	loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyAbP4svkwQIWh2S5TujdpOKLPI9plVj2s0&libraries=drawing,places&callback=initMap')
+    
     } else {
        	setTimeout(function(){
        		window.location.reload(true);
@@ -1200,7 +1245,9 @@ class App extends Component {
 	var profileDetails = document.getElementById('profile-details');
     profileDetails.hidden = true;
 	var introElement = document.getElementById('save-map-popup');
-    introElement.hidden = true;
+	introElement.hidden = true;
+	var searchSettings = document.getElementById('places-search-settings');
+    searchSettings.hidden = true;	
 
 	//Handle loading public maps.
 	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
@@ -1247,11 +1294,13 @@ class App extends Component {
 
 	center: {lat: -34.397, lng: 150.644},
        zoom: 8
-     });
+	 });
+	 
+	 map.setMapTypeId('satellite');
 
 	//Allow drawing on the map
     var drawingManager = new google.maps.drawing.DrawingManager({
-       drawingMode: google.maps.drawing.OverlayType.NONE,
+       drawingMode: google.maps.drawing.OverlayType.MARKER,
        drawingControl: false,
        drawingControlOptions: {
        position: google.maps.ControlPosition.BOTTOM_RIGHT,
@@ -1271,6 +1320,94 @@ class App extends Component {
 
 	//Load a google map
 	drawingManager.setMap(map);
+
+	var card = document.getElementById('pac-card');
+		var input = document.getElementById('pac-input');
+        var types = document.getElementById('type-selector');
+        var strictBounds = document.getElementById('strict-bounds-selector');
+
+		map.controls[google.maps.ControlPosition.TOP_RIGHT].push(card);
+		
+		/*var options = {
+			types: ['(postal_code)']
+			};*/
+
+        var autocomplete = new google.maps.places.Autocomplete(input/*, options*/);
+
+        // Bind the map's bounds (viewport) property to the autocomplete object,
+        // so that the autocomplete requests use the current map bounds for the
+        // bounds option in the request.
+        autocomplete.bindTo('bounds', map);
+
+        // Set the data fields to return when the user selects a place.
+        autocomplete.setFields(
+            ['address_components', 'geometry', 'icon', 'name']);
+
+        var infowindow = new google.maps.InfoWindow();
+        var infowindowContent = document.getElementById('infowindow-content');
+        infowindow.setContent(infowindowContent);
+        var marker = new google.maps.Marker({
+          map: map,
+          anchorPoint: new google.maps.Point(0, -29)
+        });
+
+        autocomplete.addListener('place_changed', function() {
+          infowindow.close();
+          marker.setVisible(false);
+		  var place = autocomplete.getPlace();
+		  console.log("AIRPORT BEING USED: " + place.name)
+		  airport = place.name
+          if (!place.geometry) {
+            // User entered the name of a Place that was not suggested and
+            // pressed the Enter key, or the Place Details request failed.
+            window.alert("No details available for input: '" + place.name + "'");
+            return;
+          }
+
+          // If the place has a geometry, then present it on a map.
+          if (place.geometry.viewport) {
+            map.fitBounds(place.geometry.viewport);
+          } else {
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);  // Why 17? Because it looks good.
+          }
+          marker.setPosition(place.geometry.location);
+          marker.setVisible(true);
+
+          var address = '';
+          if (place.address_components) {
+            address = [
+              (place.address_components[0] && place.address_components[0].short_name || ''),
+              (place.address_components[1] && place.address_components[1].short_name || ''),
+              (place.address_components[2] && place.address_components[2].short_name || '')
+            ].join(' ');
+          }
+
+          infowindowContent.children['place-icon'].src = place.icon;
+          infowindowContent.children['place-name'].textContent = place.name;
+          infowindowContent.children['place-address'].textContent = address;
+          infowindow.open(map, marker);
+        });
+
+        // Sets a listener on a radio button to change the filter type on Places
+        // Autocomplete.
+        function setupClickListener(id, types) {
+          var radioButton = document.getElementById(id);
+          /*radioButton.addEventListener('click', function() {
+            autocomplete.setTypes(types);
+          });*/
+        }
+
+        setupClickListener('changetype-all', []);
+        setupClickListener('changetype-address', ['address']);
+        setupClickListener('changetype-establishment', ['establishment']);
+        setupClickListener('changetype-geocode', ['geocode']);
+
+       /* document.getElementById('use-strict-bounds')
+            .addEventListener('click', function() {
+              console.log('Checkbox clicked! New state=' + this.checked);
+              autocomplete.setOptions({strictBounds: this.checked});
+            });*/
 
 	//Create button control for adding routes
 	var routeModeDiv = document.createElement('div');
@@ -1303,8 +1440,8 @@ class App extends Component {
 		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
 		routeControlUI.style.backgroundImage =  "url(" + downAddRouteIcon + ")";
 		mapControlUI.style.backgroundImage =  "url(" + addMapIcon + ")";
-		delPinControlUI.style.visibility = "hidden";
-		delAllPinControlUI.style.visibility = "hidden";
+		//delPinControlUI.style.visibility = "hidden";
+		//delAllPinControlUI.style.visibility = "hidden";
 		delAllRouteControlUI.style.visibility = "visible";	
 		delRouteControlUI.style.visibility = "visible";
 		revRouteControlUI.style.visibility = "visible";
@@ -1347,15 +1484,15 @@ class App extends Component {
 		delRouteControlUI.style.visibility = "hidden";
 		delAllRouteControlUI.style.visibility = "hidden";
 		revRouteControlUI.style.visibility = "hidden";
-		delPinControlUI.style.visibility = "visible";
-		delAllPinControlUI.style.visibility = "visible";
+		//delPinControlUI.style.visibility = "visible";
+		//delAllPinControlUI.style.visibility = "visible";
 	});
 	
     mapModeDiv.index = 1;
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(mapModeDiv);
 
 	//Create button to bring up drawing tools
-	var addModeDiv = document.createElement('div');
+	/*var addModeDiv = document.createElement('div');
 	var addControlDiv = addModeDiv;
 	var addControlUI = document.createElement('div');	
 	addControlUI.id = "App-add-arrow";	
@@ -1365,10 +1502,10 @@ class App extends Component {
 	addControlUI.style.backgroundImage =  "url(" + addIcon + ")";
 	addControlUI.style.cursor = 'pointer';
 	addControlUI.title = 'Click to recenter the map';
-	addControlDiv.appendChild(addControlUI);
+	addControlDiv.appendChild(addControlUI);*/
 
 	// Set CSS for the control interior.
-	var controlText = document.createElement('div');
+	/*var controlText = document.createElement('div');
 	addControlUI.style.backgroundImage =  "url(" + addIcon + ")";
 	controlText.style.color = 'rgb(25,25,25)';
 	controlText.style.fontFamily = 'Avenir';
@@ -1377,10 +1514,10 @@ class App extends Component {
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
 	controlText.innerHTML = '      ';
-	addControlUI.appendChild(controlText);
+	addControlUI.appendChild(controlText);*/
 
 	//Show draw tools
-	addControlUI.addEventListener('click', function() {
+	/*addControlUI.addEventListener('click', function() {
 		mapControlUI.style.visibility = "visible";
 		routeControlUI.style.visibility = "visible";
 		mapControlUI.style.backgroundImage =  "url(" + addMapIcon + ")";
@@ -1390,7 +1527,7 @@ class App extends Component {
 	});
 	
     addModeDiv.index = 1;
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(addModeDiv);
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(addModeDiv);*/
 	 
 	//Create button to hide drawing tools
 	var subModeDiv = document.createElement('div');
@@ -1419,7 +1556,7 @@ class App extends Component {
 	subControlUI.appendChild(controlText);
 
 	//Hide draw tools
-	subControlUI.addEventListener('click', function() {
+	/*subControlUI.addEventListener('click', function() {
 		drawingManager.setDrawingMode(google.maps.drawing.OverlayType.NONE);
 		mapControlUI.style.visibility = "hidden";
 		routeControlUI.style.visibility = "hidden";
@@ -1429,13 +1566,13 @@ class App extends Component {
         createPinPanel.hidden = true;
 		var createRoutePanel = document.getElementById('popup-create-route-panel');
         createRoutePanel.hidden = true;
-	});
+	});*/
 	
     subModeDiv.index = 1;
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(subModeDiv);
 
 	//Create delete Pin button
-	var delPinModeDiv = document.createElement('div');
+	/*var delPinModeDiv = document.createElement('div');
 	var delPinControlDiv = delPinModeDiv;
 	var delPinControlUI = document.createElement('div');	
 	delPinControlUI.id = "del-pin";	
@@ -1446,10 +1583,10 @@ class App extends Component {
 	delPinControlUI.style.borderRadius = '5px';
 	delPinControlUI.style.cursor = 'pointer';
 	delPinControlUI.title = 'Click to recenter the map';
-	delPinControlDiv.appendChild(delPinControlUI);
+	delPinControlDiv.appendChild(delPinControlUI);*/
 
 	// Set CSS for the control interior.
-	var controlText = document.createElement('div');
+	/*var controlText = document.createElement('div');
 	controlText.style.color = 'rgb(255,255,255)';
 	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
@@ -1457,10 +1594,10 @@ class App extends Component {
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
 	controlText.innerHTML = 'Undo';
-	delPinControlUI.appendChild(controlText);
+	delPinControlUI.appendChild(controlText);*/
 
 	//Remove the most recently added pin.
-	delPinControlUI.addEventListener('click', function() {
+	/*delPinControlUI.addEventListener('click', function() {
 
 		thisRef.clearFormData();
 
@@ -1478,10 +1615,10 @@ class App extends Component {
 	});
 	
      delPinModeDiv.index = 1;
-     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delPinModeDiv);
+     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delPinModeDiv);*/
 
 	//Create delete all Pins button
-	var delAllPinModeDiv = document.createElement('div');
+	/*var delAllPinModeDiv = document.createElement('div');
 	var delAllPinControlDiv = delAllPinModeDiv;
 	var delAllPinControlUI = document.createElement('div');	
 	delAllPinControlUI.id = "del-all-pins";	
@@ -1492,10 +1629,10 @@ class App extends Component {
 	delAllPinControlUI.style.borderRadius = '5px';
 	delAllPinControlUI.style.cursor = 'pointer';
 	delAllPinControlUI.title = 'Click to recenter the map';
-	delAllPinControlDiv.appendChild(delAllPinControlUI);
+	delAllPinControlDiv.appendChild(delAllPinControlUI);*/
 
 	// Set CSS for the control interior.
-	var controlText = document.createElement('div');
+	/*var controlText = document.createElement('div');
 	controlText.style.color = 'rgb(255,255,255)';
 	controlText.style.fontFamily = 'Avenir';
 	controlText.style.fontSize = '16px';
@@ -1503,10 +1640,10 @@ class App extends Component {
 	controlText.style.paddingLeft = '5px';
 	controlText.style.paddingRight = '5px';
 	controlText.innerHTML = 'Clear All Pins';
-	delAllPinControlUI.appendChild(controlText);
+	delAllPinControlUI.appendChild(controlText);*/
 
 	//Remove all pins.
-	delAllPinControlUI.addEventListener('click', function() {
+	/*delAllPinControlUI.addEventListener('click', function() {
 
 		thisRef.clearFormData();
 
@@ -1522,7 +1659,7 @@ class App extends Component {
 	});
 	
     delAllPinModeDiv.index = 1;
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllPinModeDiv);
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(delAllPinModeDiv);*/
 
 	//Create delete Route button
 	var delRouteModeDiv = document.createElement('div');
@@ -1748,8 +1885,8 @@ class App extends Component {
         createRoutePanel.hidden = true;
 		var mapsPanel = document.getElementById('popup-maps-panel');
    		mapsPanel.hidden = true;	
-		delPinControlUI.style.visibility = "visible";
-		delAllPinControlUI.style.visibility = "visible";
+		//delPinControlUI.style.visibility = "visible";
+		//delAllPinControlUI.style.visibility = "visible";
 
 	    //Track camera position
 	    camZoom = map.getZoom();

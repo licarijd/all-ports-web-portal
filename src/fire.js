@@ -1,11 +1,11 @@
 import firebase from 'firebase'
 var config = {
-    apiKey: "AIzaSyAddPoF3ydNzxlrbwElVycsR5-l_WqFjGQ",
-    authDomain: "pintionary.firebaseapp.com",
-    databaseURL: "https://pintionary.firebaseio.com",
-    projectId: "pintionary",
-    storageBucket: "pintionary.appspot.com",
-    messagingSenderId: "308579016094"
+    apiKey: "AIzaSyCbjUCSjDHsA_y23BHQzuamI1Kq9p28eBY",
+    authDomain: "all-ports-9f7f8.firebaseapp.com",
+    databaseURL: "https://all-ports-9f7f8.firebaseio.com",
+    projectId: "all-ports-9f7f8",
+    storageBucket: "all-ports-9f7f8.appspot.com",
+    messagingSenderId: "1070498137898"
   };
 var fire = firebase.initializeApp(config);
 export const provider = new firebase.auth.GoogleAuthProvider();
