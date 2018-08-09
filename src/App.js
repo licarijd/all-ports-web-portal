@@ -1253,7 +1253,7 @@ class App extends Component {
 	if (window.location.href != "https://allports-web-portal.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
 		publicMap = true;
 
-		//CHANGE FOR PROD. Checks if the page is loading a shortURL
+		//CHANGE WHEN HOSTING URL CHANGES. Checks if the page is loading a shortURL 
 		var shortUrlCode = window.location.href.substr(42/*33*/);
 		console.log("shortUrlCode"+shortUrlCode)
 		var db = firebase.database();
