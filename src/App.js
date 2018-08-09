@@ -1250,11 +1250,11 @@ class App extends Component {
     searchSettings.hidden = true;	
 
 	//Handle loading public maps.
-	if (window.location.href != "https://pintionary.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
+	if (window.location.href != "https://allports-web-portal.herokuapp.com/" && window.location.href != "http://localhost:3000/"){
 		publicMap = true;
 
 		//CHANGE FOR PROD. Checks if the page is loading a shortURL
-		var shortUrlCode = window.location.href.substr(22/*33*/);
+		var shortUrlCode = window.location.href.substr(42/*33*/);
 		console.log("shortUrlCode"+shortUrlCode)
 		var db = firebase.database();
 		var ref = db.ref('publicMaps/' + shortUrlCode + "/ref");
